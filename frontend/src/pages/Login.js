@@ -1,4 +1,3 @@
-// src/pages/Login.js
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -18,39 +17,40 @@ const Login = () => {
       await login(email, password);
       navigate("/");
     } catch (err) {
-      console.error(err);
-      setError(err.response?.data?.message || "Login failed");
+      const msg =
+        err.response?.data?.message || err.message || "Login failed";
+      setError(msg);
     }
   };
 
   return (
-    <div style={{ maxWidth: "400px", margin: "30px auto" }}>
-      <h2>Login</h2>
-      {error && <div style={{ color: "red" }}>{error}</div>}
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Email</label><br />
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label>Password</label><br />
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        <button type="submit" style={{ marginTop: "10px" }}>Login</button>
-      </form>
-      <p style={{ marginTop: "10px" }}>
-        Don&apos;t have an account? <Link to="/register">Register</Link>
-      </p>
+    <div className="container">
+      <div className="card" style={{ maxWidth: 460, margin: "30px auto" }}>
+        <h1 className="h1" style={{ fontSize: 28 }}>Welcome back</h1>
+        <p className="subhead">Login to continue to AgroTrust.</p>
+
+        {error && <div className="error">{error}</div>}
+
+        <form className="form" onSubmit={handleSubmit}>
+          <div>
+            <label className="mini">Email</label>
+            <input className="input" type="email" value={email}
+              onChange={(e) => setEmail(e.target.value)} required />
+          </div>
+
+          <div>
+            <label className="mini">Password</label>
+            <input className="input" type="password" value={password}
+              onChange={(e) => setPassword(e.target.value)} required />
+          </div>
+
+          <button className="btn btn-primary" type="submit">Login</button>
+        </form>
+
+        <p className="mini" style={{ marginTop: 12 }}>
+          Don&apos;t have an account? <Link to="/register" style={{ color: "var(--primary)" }}>Register</Link>
+        </p>
+      </div>
     </div>
   );
 };
