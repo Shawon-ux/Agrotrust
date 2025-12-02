@@ -2,15 +2,15 @@ const mongoose = require("mongoose");
 
 const complaintSchema = new mongoose.Schema(
   {
-    reporter: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    againstUser: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    againstUser: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // optional
     complaintType: { type: String, required: true },
+    description: { type: String, required: true },
     status: {
       type: String,
-      enum: ["OPEN", "IN_PROGRESS", "RESOLVED"],
-      default: "OPEN",
+      enum: ["PENDING", "IN_REVIEW", "RESOLVED", "REJECTED"],
+      default: "PENDING",
     },
-    description: { type: String, required: true },
   },
   { timestamps: true }
 );
