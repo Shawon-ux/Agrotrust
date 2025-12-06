@@ -1,21 +1,13 @@
-const Crop = require("../models/Crop");
+const Crop = require("../models/Crop"); // adjust filename if yours is Crop.js
 
-exports.searchCrops = async (req, res) => {
-  try {
-    const { q, location } = req.query;
-    const query = {};
+exports.search = async (req, res) => {
+  const q = (req.query.q || "").trim();
+  if (!q) return res.json({ crops: [] });
 
-    if (q) {
-      query.cropName = { $regex: q, $options: "i" };
-    }
-    if (location) {
-      query.location = { $regex: location, $options: "i" };
-    }
+  const regex = new RegExp(q, "i");
+  const crops = await Crop.find({
+    $or: [{ cropName: regex }, { name: regex }, { location: regex }, { variety: regex }],
+  }).limit(30);
 
-    const crops = await Crop.find(query);
-    res.json(crops);
-  } catch (err) {
-    console.error("Search crops error:", err);
-    res.status(500).json({ message: "Server error" });
-  }
+  res.json({ crops });
 };

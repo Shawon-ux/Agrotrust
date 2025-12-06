@@ -1,22 +1,17 @@
-// routes/subsidyRoutes.js
-const express = require("express");
-const router = express.Router();
+const router = require("express").Router();
 const { protect } = require("../middleware/authMiddleware");
 const { authorizeRoles } = require("../middleware/roleMiddleware");
-const {
-  applyForSubsidy,
-  updateSubsidyStatus,
-} = require("../controllers/subsidyController");
+const ctrl = require("../controllers/subsidyController");
 
-// Farmer applies for subsidy
-router.post("/apply", protect, authorizeRoles("FARMER"), applyForSubsidy);
+router.get("/", protect, ctrl.getSubsidies);
+router.post("/apply", protect, authorizeRoles("FARMER"), ctrl.applySubsidy);
+router.get("/mine", protect, authorizeRoles("FARMER"), ctrl.mySubsidyApplications);
 
-// Government official updates subsidy status
 router.patch(
-  "/:id/status",
+  "/applications/:id",
   protect,
-  authorizeRoles("GOV_OFFICIAL"),
-  updateSubsidyStatus
+  authorizeRoles("ADMIN", "GOV_OFFICIAL"),
+  ctrl.updateApplicationStatus
 );
 
 module.exports = router;

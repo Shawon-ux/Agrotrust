@@ -1,11 +1,7 @@
-const authorizeRoles = (...roles) => {
-    return (req, res, next) => {
-      if (!req.user || !roles.includes(req.user.role)) {
-        return res.status(403).json({ message: "Forbidden: insufficient role" });
-      }
-      next();
-    };
-  };
-  
-  module.exports = { authorizeRoles };
-  
+exports.authorizeRoles = (...roles) => (req, res, next) => {
+  const role = req.user?.role;
+  if (!role || !roles.includes(role)) {
+    return res.status(403).json({ message: "Forbidden" });
+  }
+  next();
+};

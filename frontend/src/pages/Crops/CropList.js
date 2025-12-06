@@ -1,16 +1,18 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../../api";
 import TradeModal from "../../components/TradeModal";
 import { useAuth } from "../../context/AuthContext";
 
 const imageMap = {
-  rice: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Rice_field_in_Bangladesh.jpg/1200px-Rice_field_in_Bangladesh.jpg",
-  wheat: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Wheat_field.jpg/1200px-Wheat_field.jpg",
+  rice: "https://commons.wikimedia.org/wiki/Special:FilePath/Wheat%20field.jpg?width=1200",
+  wheat: "https://commons.wikimedia.org/wiki/Special:FilePath/Wheat%20close-up.JPG?width=1200",
   potato: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Patates.jpg/1200px-Patates.jpg",
   tomato: "https://commons.wikimedia.org/wiki/Special:FilePath/Tomatoes.jpg?width=1200",
   corn: "https://commons.wikimedia.org/wiki/Special:FilePath/Corncobs.jpg?width=1200",
   onion: "https://commons.wikimedia.org/wiki/Special:FilePath/Onions.jpg?width=1200",
 };
+
 
 const FALLBACK_IMG =
   "https://commons.wikimedia.org/wiki/Special:FilePath/Agriculture%20in%20Bangladesh.jpg?width=1200";
@@ -24,6 +26,7 @@ const demoCrops = [
   { _id: "demo6", name: "Onion", variety: "Local", location: "Pabna", pricePerKg: 95, quantityKg: 350, status: "AVAILABLE" },
 ];
 
+// normalize DB crop -> UI crop
 const normalizeCrop = (c) => {
   const name = c.name || c.cropName || "Unknown";
 
@@ -47,6 +50,7 @@ const normalizeCrop = (c) => {
 };
 
 const CropList = () => {
+  const nav = useNavigate();
   const { user } = useAuth();
   const isAdmin = user?.role === "ADMIN";
 
@@ -113,7 +117,7 @@ const CropList = () => {
     return imageMap[key] || FALLBACK_IMG;
   };
 
-  // ✅ ADMIN ONLY: toggle availability
+  // ADMIN ONLY toggle availability (backend must support PATCH /api/crops/:id/availability)
   const toggleAvailability = async (crop) => {
     try {
       if (!isAdmin) return;
@@ -122,11 +126,8 @@ const CropList = () => {
         (crop.status || "").toUpperCase() === "SOLD_OUT" ||
         Number(crop.quantityKg ?? 0) <= 0;
 
-      // if sold out => make available, else => mark sold out
-      const makeAvailable = soldOut;
-
       await api.patch(`/crops/${crop._id}/availability`, {
-        available: makeAvailable,
+        available: soldOut, // soldOut -> make available
       });
 
       fetchCrops();
@@ -143,8 +144,15 @@ const CropList = () => {
             <h1 className="h1">Available Crops</h1>
             <p className="subhead">Browse crops with price and quantity.</p>
           </div>
-          <div className="hero-actions">
+
+          <div className="hero-actions" style={{ display: "flex", gap: 10 }}>
             <button className="btn" onClick={fetchCrops}>Refresh</button>
+
+            {isAdmin && (
+              <button className="btn btn-primary" onClick={() => nav("/crops/admin/add")}>
+                + Add Crop
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -216,7 +224,6 @@ const CropList = () => {
                       </p>
                     </div>
 
-                    {/* Badge + Admin toggle */}
                     <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
                       <span className={`badge ${soldOut ? "soldout" : ""}`}>
                         {soldOut ? "SOLD OUT" : "AVAILABLE"}

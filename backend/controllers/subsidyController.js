@@ -1,41 +1,43 @@
-// controllers/subsidyController.js
 const Subsidy = require("../models/Subsidy");
+const SubsidyApplication = require("../models/SubsidyApplication");
 
-// POST /api/subsidies/apply  (Farmer)
-exports.applyForSubsidy = async (req, res) => {
-  try {
-    const { programName } = req.body;
-
-    const subsidy = await Subsidy.create({
-      farmer: req.user._id,
-      programName,
-    });
-
-    res.status(201).json(subsidy);
-  } catch (err) {
-    console.error("Apply subsidy error:", err);
-    res.status(500).json({ message: "Server error" });
-  }
+exports.getSubsidies = async (req, res) => {
+  const list = await Subsidy.find({ isActive: true }).sort({ createdAt: -1 });
+  res.json(list);
 };
 
-// PATCH /api/subsidies/:id/status  (Gov official)
-exports.updateSubsidyStatus = async (req, res) => {
-  try {
-    const { status } = req.body;
+exports.applySubsidy = async (req, res) => {
+  const { subsidyId, note } = req.body;
+  if (!subsidyId) return res.status(400).json({ message: "subsidyId required" });
 
-    const subsidy = await Subsidy.findByIdAndUpdate(
-      req.params.id,
-      { status },
-      { new: true }
-    );
+  const subsidy = await Subsidy.findById(subsidyId);
+  if (!subsidy) return res.status(404).json({ message: "Subsidy not found" });
 
-    if (!subsidy) {
-      return res.status(404).json({ message: "Subsidy not found" });
-    }
+  const app = await SubsidyApplication.create({
+    subsidy: subsidyId,
+    farmer: req.user._id,
+    note,
+  });
 
-    res.json(subsidy);
-  } catch (err) {
-    console.error("Update subsidy error:", err);
-    res.status(500).json({ message: "Server error" });
-  }
+  res.status(201).json(app);
+};
+
+exports.mySubsidyApplications = async (req, res) => {
+  const apps = await SubsidyApplication.find({ farmer: req.user._id })
+    .populate("subsidy")
+    .sort({ createdAt: -1 });
+  res.json(apps);
+};
+
+// Admin/Gov can review
+exports.updateApplicationStatus = async (req, res) => {
+  const { status, adminReply } = req.body;
+  const app = await SubsidyApplication.findById(req.params.id);
+  if (!app) return res.status(404).json({ message: "Application not found" });
+
+  if (status) app.status = status;
+  if (adminReply !== undefined) app.adminReply = adminReply;
+
+  await app.save();
+  res.json(app);
 };

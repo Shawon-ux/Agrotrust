@@ -15,11 +15,18 @@ import AdminDashboard from "./pages/Dashboard/AdminDashboard";
 import GovDashboard from "./pages/Dashboard/GovDashboard";
 
 import CropList from "./pages/Crops/CropList";
+import AdminAddCrop from "./pages/Crops/AdminAddCrop";
+
 import SubsidyApply from "./pages/Subsidies/SubsidyApply";
+import SubsidyPage from "./pages/Subsidies/SubsidyPage";
+
 import ComplaintForm from "./pages/Complaints/ComplaintForm";
 import EducationList from "./pages/Education/EducationList";
 import FeedbackForm from "./pages/Feedback/FeedbackForm";
 
+import NotificationsPage from "./pages/Notifications/NotificationsPage";
+import ChatbotPage from "./pages/Chatbot/ChatbotPage";
+import LedgerPage from "./pages/Ledger/LedgerPage";
 
 const Home = () => {
   const { user } = useAuth();
@@ -33,7 +40,6 @@ const Home = () => {
     );
   }
 
-  // Redirect-ish behaviour based on role
   if (user.role === "FARMER") return <FarmerDashboard />;
   if (user.role === "BUYER") return <BuyerDashboard />;
   if (user.role === "ADMIN") return <AdminDashboard />;
@@ -48,12 +54,17 @@ const App = () => {
         <Navbar />
 
         <Routes>
-          <Route path="/" element={
-            <ProtectedRoute>
-              <Home />
-            </ProtectedRoute>
-          } />
+          {/* Home */}
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Home />
+              </ProtectedRoute>
+            }
+          />
 
+          {/* Auth */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
@@ -66,8 +77,24 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/crops/admin/add"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN"]}>
+                <AdminAddCrop />
+              </ProtectedRoute>
+            }
+          />
 
-          {/* Subsidies - Farmer only */}
+          {/* Subsidies */}
+          <Route
+            path="/subsidies"
+            element={
+              <ProtectedRoute>
+                <SubsidyPage />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/subsidies/apply"
             element={
@@ -77,7 +104,37 @@ const App = () => {
             }
           />
 
-          {/* Complaints - any logged in */}
+          {/* Notifications */}
+          <Route
+            path="/notifications"
+            element={
+              <ProtectedRoute>
+                <NotificationsPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Chatbot */}
+          <Route
+            path="/chatbot"
+            element={
+              <ProtectedRoute>
+                <ChatbotPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Ledger - Admin/Gov only */}
+          <Route
+            path="/ledger"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN", "GOV_OFFICIAL"]}>
+                <LedgerPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Complaints */}
           <Route
             path="/complaints"
             element={
@@ -87,7 +144,7 @@ const App = () => {
             }
           />
 
-          {/* Education - any logged in */}
+          {/* Education */}
           <Route
             path="/education"
             element={
@@ -106,6 +163,9 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+
+          {/* Fallback */}
+          <Route path="*" element={<div style={{ padding: 20 }}>404 - Not Found</div>} />
         </Routes>
       </Router>
     </AuthProvider>

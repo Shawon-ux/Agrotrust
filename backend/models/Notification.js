@@ -2,9 +2,10 @@ const mongoose = require("mongoose");
 
 const notificationSchema = new mongoose.Schema(
   {
-    recipient: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    message: { type: String, required: true },
-    messageType: { type: String, default: "INFO" },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    title: { type: String, required: true },
+    message: String,
+    type: { type: String, default: "INFO" }, // INFO | WARNING | SUCCESS
     isRead: { type: Boolean, default: false },
   },
   { timestamps: true }

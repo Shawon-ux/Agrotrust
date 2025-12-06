@@ -1,15 +1,7 @@
-const express = require("express");
-const router = express.Router();
+const router = require("express").Router();
 const { protect } = require("../middleware/authMiddleware");
 const { authorizeRoles } = require("../middleware/roleMiddleware");
-const { getAnalyticsSummary } = require("../controllers/analyticsController");
+const ctrl = require("../controllers/analyticsController");
 
-// Admin only
-router.get(
-  "/summary",
-  protect,
-  authorizeRoles("ADMIN"),
-  getAnalyticsSummary
-);
-
+router.get("/summary", protect, authorizeRoles("ADMIN", "GOV_OFFICIAL"), ctrl.summary);
 module.exports = router;

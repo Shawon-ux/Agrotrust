@@ -1,6 +1,8 @@
+// backend/routes/cropRoutes.js
 const express = require("express");
 const router = express.Router();
 
+const upload = require("../middleware/upload");
 const { protect } = require("../middleware/authMiddleware");
 const { authorizeRoles } = require("../middleware/roleMiddleware");
 
@@ -10,13 +12,19 @@ const {
   setCropAvailability,
 } = require("../controllers/cropController");
 
-// Farmer: create crop listing
-router.post("/", protect, authorizeRoles("FARMER"), createCrop);
+// View crops
+router.get("/", protect, getAllCrops);
 
-// Public (or logged-in) view crops
-router.get("/", getAllCrops);
+// Admin add crop (with optional image upload field name: "image")
+router.post(
+  "/",
+  protect,
+  authorizeRoles("ADMIN"),
+  upload.single("image"),
+  createCrop
+);
 
-// Admin: change availability
+// Admin toggle availability
 router.patch(
   "/:id/availability",
   protect,

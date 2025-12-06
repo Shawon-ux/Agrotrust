@@ -1,20 +1,12 @@
-// models/Subsidy.js
 const mongoose = require("mongoose");
 
 const subsidySchema = new mongoose.Schema(
   {
-    farmer: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    programName: { type: String, required: true },
-    amountApproved: { type: Number, default: 0 },
-    status: {
-      type: String,
-      enum: ["PENDING", "APPROVED", "REJECTED", "DISBURSED"],
-      default: "PENDING",
-    },
+    title: { type: String, required: true },
+    description: String,
+    amount: { type: Number, default: 0 },
+    eligibility: { type: String, default: "FARMER" }, // FARMER | ALL
+    isActive: { type: Boolean, default: true },
   },
   { timestamps: true }
 );
