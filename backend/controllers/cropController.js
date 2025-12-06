@@ -28,3 +28,33 @@ exports.getAllCrops = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+
+// PATCH /api/crops/:id/availability  (ADMIN only)
+exports.setCropAvailability = async (req, res) => {
+  try {
+    if (req.user.role !== "ADMIN") {
+      return res.status(403).json({ message: "Admin only" });
+    }
+
+    const { available } = req.body; // boolean
+    const crop = await Crop.findById(req.params.id);
+
+    if (!crop) return res.status(404).json({ message: "Crop not found" });
+
+    if (available === true) {
+      // Set to AVAILABLE (if quantity is 0, give minimum 1 so UI won't show sold out)
+      if ((crop.quantityAvailable ?? 0) <= 0) crop.quantityAvailable = 1;
+      crop.status = "AVAILABLE";
+    } else {
+      crop.quantityAvailable = 0;
+      crop.status = "SOLD_OUT";
+    }
+
+    await crop.save();
+    res.json({ message: "Updated", crop });
+  } catch (err) {
+    console.error("setCropAvailability error:", err);
+    res.status(500).json({ message: err.message || "Server error" });
+  }
+};

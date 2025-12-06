@@ -1,36 +1,50 @@
-const Order = require("../models/Order");
-const Crop = require("../models/Crop");
-const Payment = require("../models/Payment");
+let Crop;
+try {
+  Crop = require("../models/Crop");
+} catch (e) {
+  Crop = require("../models/Crops");
+}
 
+const Order = require("../models/Order");
+
+// POST /api/orders  (BUYER)
 exports.createOrder = async (req, res) => {
   try {
-    const { farmerId, items } = req.body; // items: [{ cropId, quantity }]
-    let totalAmount = 0;
-    const cropsArray = [];
+    const { cropId, quantity } = req.body;
+    const qty = Number(quantity);
 
-    for (const item of items) {
-      const crop = await Crop.findById(item.cropId);
-      if (!crop) continue;
-      const price = crop.pricePerUnit * item.quantity;
-      totalAmount += price;
-      cropsArray.push({ crop: crop._id, quantity: item.quantity, price });
+    if (!cropId || !qty || qty <= 0) {
+      return res.status(400).json({ message: "cropId and valid quantity are required" });
     }
 
+    const crop = await Crop.findById(cropId);
+    if (!crop) return res.status(404).json({ message: "Crop not found" });
+
+    const available = Number(crop.quantityAvailable ?? 0);
+    if (available < qty) {
+      return res.status(400).json({ message: `Only ${available} available` });
+    }
+
+    const pricePerUnit = Number(crop.pricePerUnit ?? 0);
+    const totalPrice = pricePerUnit * qty;
+
     const order = await Order.create({
-      buyer: req.user._id,
-      farmer: farmerId,
-      crops: cropsArray,
-      totalAmount,
+      buyer: req.user.id,
+      crop: crop._id,
+      quantity: qty,
+      unit: crop.unit || "kg",
+      pricePerUnit,
+      totalPrice
     });
 
-    const payment = await Payment.create({
-      order: order._id,
-      amount: totalAmount,
-    });
+    // reduce crop stock
+    crop.quantityAvailable = available - qty;
+    crop.status = crop.quantityAvailable > 0 ? "AVAILABLE" : "SOLD_OUT";
+    await crop.save();
 
-    res.status(201).json({ order, payment });
+    res.status(201).json(order);
   } catch (err) {
-    console.error("Create order error:", err);
-    res.status(500).json({ message: "Server error" });
+    console.error("createOrder error:", err);
+    res.status(500).json({ message: err.message || "Server error" });
   }
 };

@@ -23,6 +23,7 @@ app.get("/api/test", (req, res) => {
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/dashboard", require("./routes/dashboardRoutes"));
 app.use("/api/crops", require("./routes/cropRoutes"));
+app.use("/api/orders", require("./routes/orderRoutes"));
 app.use("/api/subsidies", require("./routes/subsidyRoutes"));
 app.use("/api/complaints", require("./routes/complaintRoutes"));
 app.use("/api/notifications", require("./routes/notificationRoutes"));
