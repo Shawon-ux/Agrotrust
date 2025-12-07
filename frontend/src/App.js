@@ -27,6 +27,7 @@ import FeedbackForm from "./pages/Feedback/FeedbackForm";
 import NotificationsPage from "./pages/Notifications/NotificationsPage";
 import ChatbotPage from "./pages/Chatbot/ChatbotPage";
 import LedgerPage from "./pages/Ledger/LedgerPage";
+import SearchPage from "./pages/Search/SearchPage";
 
 const Home = () => {
   const { user } = useAuth();
@@ -160,6 +161,14 @@ const App = () => {
             element={
               <ProtectedRoute allowedRoles={["BUYER"]}>
                 <FeedbackForm />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/search"
+            element={
+              <ProtectedRoute>
+                <SearchPage />
               </ProtectedRoute>
             }
           />

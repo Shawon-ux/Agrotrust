@@ -1,6 +1,7 @@
-const router = require("express").Router();
+const express = require("express");
+const router = express.Router();
 const { protect } = require("../middleware/authMiddleware");
-const ctrl = require("../controllers/searchController");
+const { searchAll } = require("../controllers/searchController");
 
-router.get("/", protect, ctrl.search);
+router.get("/", protect, searchAll);
 module.exports = router;

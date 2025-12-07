@@ -48,6 +48,7 @@ app.use("/api/analytics", require("./routes/analyticsRoutes"));
 app.use("/api/ledger", require("./routes/ledgerRoutes"));
 app.use("/api/verification", require("./routes/verificationRoutes"));
 
+
 app.use((req, res) => {
   res.status(404).json({ message: `Route not found: ${req.method} ${req.originalUrl}` });
 });
