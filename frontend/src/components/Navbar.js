@@ -18,6 +18,9 @@ import VerifiedUserOutlinedIcon from "@mui/icons-material/VerifiedUserOutlined";
 import InsightsOutlinedIcon from "@mui/icons-material/InsightsOutlined";
 import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
 import PaymentsOutlinedIcon from "@mui/icons-material/PaymentsOutlined";
+// Import a new icon for the education feature
+import SchoolOutlinedIcon from "@mui/icons-material/SchoolOutlined"; 
+
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -40,6 +43,10 @@ const Navbar = () => {
     // Common useful pages for logged in users
     items.push({ to: "/notifications", label: "Notifications", icon: <NotificationsNoneIcon fontSize="small" /> });
     items.push({ to: "/chatbot", label: "Chatbot", icon: <SmartToyOutlinedIcon fontSize="small" /> });
+    
+    // --- ADDED LEARNING PLATFORM LINK TO MENU ---
+    items.push({ to: "/education", label: "Learning Platform", icon: <SchoolOutlinedIcon fontSize="small" /> });
+    // ------------------------------------------
 
     // FARMER pages
     if (user.role === "FARMER") {
@@ -85,6 +92,7 @@ const Navbar = () => {
                 <NavLink className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`} to="/crops">
                   Crops
                 </NavLink>
+                {/* Note: This link is already here in your original code */}
                 <NavLink className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`} to="/education">
                   Education
                 </NavLink>
@@ -166,8 +174,9 @@ const Navbar = () => {
                           {it.label}
                         </MenuItem>
 
-                        {/* small divider after first two common ones */}
-                        {idx === 1 && <Divider />}
+                        {/* small divider after common items */}
+                        {/* The index check 'idx === 2' now accounts for the 3 common links (Notif, Chatbot, Education) */}
+                        {idx === 2 && <Divider />} 
                       </React.Fragment>
                     ))
                   )}

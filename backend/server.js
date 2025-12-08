@@ -47,6 +47,8 @@ app.use("/api/chatbot", require("./routes/chatbotRoutes"));
 app.use("/api/analytics", require("./routes/analyticsRoutes"));
 app.use("/api/ledger", require("./routes/ledgerRoutes"));
 app.use("/api/verification", require("./routes/verificationRoutes"));
+app.use("/api/courses", require("./routes/courseRoutes"));
+app.use("/api/lessons", require("./routes/lessonRoutes"));
 
 app.use((req, res) => {
   res.status(404).json({ message: `Route not found: ${req.method} ${req.originalUrl}` });

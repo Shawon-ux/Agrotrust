@@ -21,6 +21,7 @@ const userSchema = new mongoose.Schema(
     },
     languagePreference: { type: String, default: "en" },
     isVerified: { type: Boolean, default: false },
+    enrolledCourses: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],
   },
   { timestamps: true }
 );

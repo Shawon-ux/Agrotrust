@@ -22,11 +22,15 @@ import SubsidyPage from "./pages/Subsidies/SubsidyPage";
 
 import ComplaintForm from "./pages/Complaints/ComplaintForm";
 import EducationList from "./pages/Education/EducationList";
+import AddCoursePage from "./pages/Education/AddCoursePage";
 import FeedbackForm from "./pages/Feedback/FeedbackForm";
 
 import NotificationsPage from "./pages/Notifications/NotificationsPage";
 import ChatbotPage from "./pages/Chatbot/ChatbotPage";
 import LedgerPage from "./pages/Ledger/LedgerPage";
+
+
+
 
 const Home = () => {
   const { user } = useAuth();
@@ -163,7 +167,16 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-
+          {/* Education - Add Course Page (New Route) */}
+          <Route
+            path="/education/admin/add-course"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN", "FARMER", "GOV_OFFICIAL"]}>
+                <AddCoursePage />
+              </ProtectedRoute>
+            }
+          />
+     
           {/* Fallback */}
           <Route path="*" element={<div style={{ padding: 20 }}>404 - Not Found</div>} />
         </Routes>
