@@ -31,6 +31,7 @@ import LedgerPage from "./pages/Ledger/LedgerPage";
 
 
 
+import SearchPage from "./pages/Search/SearchPage";
 
 const Home = () => {
   const { user } = useAuth();
@@ -176,7 +177,15 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-     
+               <Route
+            path="/search"
+            element={
+              <ProtectedRoute>
+                <SearchPage />
+              </ProtectedRoute>
+            }
+          />
+
           {/* Fallback */}
           <Route path="*" element={<div style={{ padding: 20 }}>404 - Not Found</div>} />
         </Routes>
