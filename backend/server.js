@@ -34,6 +34,7 @@ app.get("/api/test", (req, res) => {
 
 // ✅ routes
 app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/ledger", require("./routes/ledgerRoutes")); // ✅ FIX (BLOCKCHAIN LEDGER)
 app.use("/api/dashboard", require("./routes/dashboardRoutes"));
 app.use("/api/crops", require("./routes/cropRoutes"));
 app.use("/api/orders", require("./routes/orderRoutes"));

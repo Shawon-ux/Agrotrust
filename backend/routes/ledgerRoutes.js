@@ -3,7 +3,21 @@ const { protect } = require("../middleware/authMiddleware");
 const { authorizeRoles } = require("../middleware/roleMiddleware");
 const ctrl = require("../controllers/ledgerController");
 
-router.get("/", protect, authorizeRoles("ADMIN", "GOV_OFFICIAL"), ctrl.listLedger);
-router.post("/", protect, authorizeRoles("ADMIN", "GOV_OFFICIAL"), ctrl.addLedgerEntry);
+// View ledger (Admin & Gov)
+router.get(
+  "/",
+  protect,
+  authorizeRoles("ADMIN", "GOV_OFFICIAL"),
+  ctrl.listLedger
+);
+
+// Add ledger entry (Admin & Gov only)
+router.post(
+  "/",
+  protect,
+  authorizeRoles("ADMIN", "GOV_OFFICIAL"),
+  ctrl.addLedgerEntry
+);
+
 
 module.exports = router;
