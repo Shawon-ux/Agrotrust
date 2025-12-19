@@ -16,8 +16,19 @@ const {
 router.get("/", protect, getAllCrops);
 
 // Admin add crop (with optional image upload field name: "image")
+// This is the existing route for POST /api/crops
 router.post(
   "/",
+  protect,
+  authorizeRoles("ADMIN"),
+  upload.single("image"),
+  createCrop
+);
+
+// NEW ROUTE: Admin add crop via POST /api/crops/admin
+// This matches what your frontend is calling
+router.post(
+  "/admin", // <-- This is the key change
   protect,
   authorizeRoles("ADMIN"),
   upload.single("image"),

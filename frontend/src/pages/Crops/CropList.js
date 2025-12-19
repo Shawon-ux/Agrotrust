@@ -4,50 +4,9 @@ import api from "../../api";
 import TradeModal from "../../components/TradeModal";
 import { useAuth } from "../../context/AuthContext";
 
-const imageMap = {
-  rice: "https://commons.wikimedia.org/wiki/Special:FilePath/Wheat%20field.jpg?width=1200",
-  wheat: "https://commons.wikimedia.org/wiki/Special:FilePath/Wheat%20close-up.JPG?width=1200",
-  potato: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Patates.jpg/1200px-Patates.jpg",
-  tomato: "https://commons.wikimedia.org/wiki/Special:FilePath/Tomatoes.jpg?width=1200",
-  corn: "https://commons.wikimedia.org/wiki/Special:FilePath/Corncobs.jpg?width=1200",
-  onion: "https://commons.wikimedia.org/wiki/Special:FilePath/Onions.jpg?width=1200",
-};
-
-
+// --- Image fallbacks (only used if crop has no image) ---
 const FALLBACK_IMG =
-  "https://commons.wikimedia.org/wiki/Special:FilePath/Agriculture%20in%20Bangladesh.jpg?width=1200";
-
-const demoCrops = [
-  { _id: "demo1", name: "Rice", variety: "BRRI Dhan-28", location: "Bogura", pricePerKg: 58, quantityKg: 1200, status: "AVAILABLE" },
-  { _id: "demo2", name: "Wheat", variety: "Shatabdi", location: "Rajshahi", pricePerKg: 52, quantityKg: 800, status: "AVAILABLE" },
-  { _id: "demo3", name: "Potato", variety: "Granola", location: "Munshiganj", pricePerKg: 32, quantityKg: 600, status: "AVAILABLE" },
-  { _id: "demo4", name: "Tomato", variety: "Hybrid", location: "Jashore", pricePerKg: 70, quantityKg: 0, status: "SOLD_OUT" },
-  { _id: "demo5", name: "Corn", variety: "Sweet Corn", location: "Dinajpur", pricePerKg: 45, quantityKg: 500, status: "AVAILABLE" },
-  { _id: "demo6", name: "Onion", variety: "Local", location: "Pabna", pricePerKg: 95, quantityKg: 350, status: "AVAILABLE" },
-];
-
-// normalize DB crop -> UI crop
-const normalizeCrop = (c) => {
-  const name = c.name || c.cropName || "Unknown";
-
-  const qty = c.quantityKg ?? c.quantityAvailable ?? c.quantity ?? 0;
-  const price = c.pricePerKg ?? c.pricePerUnit ?? c.price ?? 0;
-  const unit = c.unit || "kg";
-
-  const statusFromQty = Number(qty) > 0 ? "AVAILABLE" : "SOLD_OUT";
-  const status = (c.status || statusFromQty).toUpperCase();
-
-  return {
-    ...c,
-    name,
-    pricePerKg: Number(price),
-    quantityKg: Number(qty),
-    unit,
-    status,
-    variety: c.variety || "",
-    location: c.location || "Bangladesh",
-  };
-};
+  "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/Agriculture_in_Bangladesh.jpg/1200px-Agriculture_in_Bangladesh.jpg";
 
 const CropList = () => {
   const nav = useNavigate();
@@ -72,16 +31,12 @@ const CropList = () => {
       const res = await api.get("/crops");
       const list = Array.isArray(res.data) ? res.data : res.data?.crops || [];
 
-      if (list.length) {
-        setCrops(list.map(normalizeCrop));
-      } else {
-        setCrops(demoCrops.map(normalizeCrop));
-        setErr("No crops in database. Showing demo crops.");
-      }
+      // Only show real crops from DB — no fallback demo data
+      setCrops(list.map(normalizeCrop));
     } catch (e) {
-      console.error(e);
-      setCrops(demoCrops.map(normalizeCrop));
-      setErr("Could not load crops from server. Showing demo crops.");
+      console.error("Failed to fetch crops:", e);
+      setErr("Could not load crops from server.");
+      setCrops([]); // Clear crops on error
     } finally {
       setLoading(false);
     }
@@ -91,6 +46,27 @@ const CropList = () => {
     fetchCrops();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // normalize DB crop -> UI crop
+  const normalizeCrop = (c) => {
+    const name = c.name || c.cropName || "Unknown";
+    const qty = c.quantityKg ?? c.quantityAvailable ?? c.quantity ?? 0;
+    const price = c.pricePerKg ?? c.pricePerUnit ?? c.price ?? 0;
+    const unit = c.unit || "kg";
+    const statusFromQty = Number(qty) > 0 ? "AVAILABLE" : "SOLD_OUT";
+    const status = (c.status || statusFromQty).toUpperCase();
+
+    return {
+      ...c,
+      name,
+      pricePerKg: Number(price),
+      quantityKg: Number(qty),
+      unit,
+      status,
+      variety: c.variety || "",
+      location: c.location || "Bangladesh",
+    };
+  };
 
   const filtered = useMemo(() => {
     const text = q.trim().toLowerCase();
@@ -111,26 +87,25 @@ const CropList = () => {
 
   const getImageForCrop = (c) => {
     const raw = c.image || c.imageUrl || c.photo;
-    if (raw && typeof raw === "string" && raw.startsWith("http")) return raw;
+    if (raw && typeof raw === "string") {
+      return raw; // supports both http:// and /uploads/ paths
+    }
 
-    const key = (c.name || c.cropName || "").toLowerCase().trim();
-    return imageMap[key] || FALLBACK_IMG;
+    // No image → use generic fallback
+    return FALLBACK_IMG;
   };
 
-  // ADMIN ONLY toggle availability (backend must support PATCH /api/crops/:id/availability)
+  // ADMIN ONLY: toggle availability
   const toggleAvailability = async (crop) => {
     try {
       if (!isAdmin) return;
 
-      const soldOut =
-        (crop.status || "").toUpperCase() === "SOLD_OUT" ||
-        Number(crop.quantityKg ?? 0) <= 0;
-
+      const soldOut = (crop.status || "").toUpperCase() === "SOLD_OUT";
       await api.patch(`/crops/${crop._id}/availability`, {
-        available: soldOut, // soldOut -> make available
+        available: soldOut, // if currently sold out → make available, and vice versa
       });
 
-      fetchCrops();
+      fetchCrops(); // refresh list
     } catch (e) {
       alert(e.response?.data?.message || "Failed to update availability");
     }
@@ -184,11 +159,18 @@ const CropList = () => {
 
       {loading ? (
         <div className="card">Loading crops...</div>
+      ) : crops.length === 0 ? (
+        <div className="card">
+          <h3 style={{ marginTop: 0 }}>No crops available</h3>
+          <p style={{ color: "var(--muted)", marginBottom: 0 }}>
+            {isAdmin ? "Add a new crop to get started." : "Check back later for available crops."}
+          </p>
+        </div>
       ) : filtered.length === 0 ? (
         <div className="card">
-          <h3 style={{ marginTop: 0 }}>No crops found</h3>
+          <h3 style={{ marginTop: 0 }}>No crops match your filter</h3>
           <p style={{ color: "var(--muted)", marginBottom: 0 }}>
-            Try a different search or filter.
+            Try a different search term or filter.
           </p>
         </div>
       ) : (
