@@ -18,9 +18,9 @@ import VerifiedUserOutlinedIcon from "@mui/icons-material/VerifiedUserOutlined";
 import InsightsOutlinedIcon from "@mui/icons-material/InsightsOutlined";
 import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
 import PaymentsOutlinedIcon from "@mui/icons-material/PaymentsOutlined";
-// Import a new icon for the education feature
-import SchoolOutlinedIcon from "@mui/icons-material/SchoolOutlined"; 
-
+import SchoolOutlinedIcon from "@mui/icons-material/SchoolOutlined";
+// Add Orders icon
+import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -44,9 +44,13 @@ const Navbar = () => {
     items.push({ to: "/notifications", label: "Notifications", icon: <NotificationsNoneIcon fontSize="small" /> });
     items.push({ to: "/chatbot", label: "Chatbot", icon: <SmartToyOutlinedIcon fontSize="small" /> });
     
-    // --- ADDED LEARNING PLATFORM LINK TO MENU ---
+    // Add Orders link to menu for BUYER, FARMER, ADMIN
+    if (["BUYER", "FARMER", "ADMIN"].includes(user.role)) {
+      items.push({ to: "/orders", label: "My Orders", icon: <ShoppingCartOutlinedIcon fontSize="small" /> });
+    }
+    
+    // Add Education link
     items.push({ to: "/education", label: "Learning Platform", icon: <SchoolOutlinedIcon fontSize="small" /> });
-    // ------------------------------------------
 
     // FARMER pages
     if (user.role === "FARMER") {
@@ -92,7 +96,14 @@ const Navbar = () => {
                 <NavLink className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`} to="/crops">
                   Crops
                 </NavLink>
-                {/* Note: This link is already here in your original code */}
+                
+                {/* Add Orders link to main navigation for BUYER, FARMER, ADMIN */}
+                {["BUYER", "FARMER", "ADMIN"].includes(user.role) && (
+                  <NavLink className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`} to="/orders">
+                    Orders
+                  </NavLink>
+                )}
+                
                 <NavLink className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`} to="/education">
                   Education
                 </NavLink>
@@ -112,6 +123,18 @@ const Navbar = () => {
             <>
               {/* ✅ ICON ROW: show for ALL logged-in users */}
               <div className="icon-row">
+                {/* Add Orders icon to icon row for quick access */}
+                {["BUYER", "FARMER", "ADMIN"].includes(user.role) && (
+                  <Link
+                    className={`icon-btn ${isActivePath("/orders") ? "active" : ""}`}
+                    to="/orders"
+                    title="My Orders"
+                    aria-label="My Orders"
+                  >
+                    <ShoppingCartOutlinedIcon fontSize="small" />
+                  </Link>
+                )}
+
                 <Link
                   className={`icon-btn ${isActivePath("/notifications") ? "active" : ""}`}
                   to="/notifications"
@@ -174,9 +197,8 @@ const Navbar = () => {
                           {it.label}
                         </MenuItem>
 
-                        {/* small divider after common items */}
-                        {/* The index check 'idx === 2' now accounts for the 3 common links (Notif, Chatbot, Education) */}
-                        {idx === 2 && <Divider />} 
+                        {/* small divider after common items (now includes Orders) */}
+                        {idx === 3 && <Divider />} 
                       </React.Fragment>
                     ))
                   )}

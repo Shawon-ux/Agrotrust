@@ -28,9 +28,8 @@ import FeedbackForm from "./pages/Feedback/FeedbackForm";
 import NotificationsPage from "./pages/Notifications/NotificationsPage";
 import ChatbotPage from "./pages/Chatbot/ChatbotPage";
 import LedgerPage from "./pages/Ledger/LedgerPage";
-
-
-
+import OrdersPage from "./pages/Orders/OrdersPage";
+import OrderDetailPage from "./pages/Orders/OrderDetailPage";
 import SearchPage from "./pages/Search/SearchPage";
 
 const Home = () => {
@@ -185,7 +184,22 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-
+          <Route
+            path="/orders"
+            element={
+              <ProtectedRoute allowedRoles={["BUYER", "FARMER", "ADMIN", "GOV_OFFICIAL"]}>
+                <OrdersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/orders/:id"
+            element={
+              <ProtectedRoute allowedRoles={["BUYER", "FARMER", "ADMIN", "GOV_OFFICIAL"]}>
+                <OrderDetailPage />
+              </ProtectedRoute>
+            }
+          />
           {/* Fallback */}
           <Route path="*" element={<div style={{ padding: 20 }}>404 - Not Found</div>} />
         </Routes>

@@ -1,3 +1,4 @@
+// src/components/TradeModal.js
 import React, { useMemo, useState } from "react";
 import api from "../api";
 
@@ -8,9 +9,12 @@ const TradeModal = ({ open, onClose, crop, user, onSuccess }) => {
 
   const defaultUnit = crop?.unit || "kg";
 
-  const [mode, setMode] = useState(isFarmer ? "SELL" : "BUY"); // BUY or SELL
+  const [mode, setMode] = useState(isFarmer ? "SELL" : "BUY");
   const [qty, setQty] = useState("");
   const [price, setPrice] = useState(crop?.pricePerKg ?? "");
+  const [shippingAddress, setShippingAddress] = useState("");
+  const [contactNumber, setContactNumber] = useState("");
+  const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
 
@@ -23,17 +27,24 @@ const TradeModal = ({ open, onClose, crop, user, onSuccess }) => {
       setErr("");
       setLoading(true);
 
-      // BUYER flow -> create order
+      // BUYER flow -> create order (cash on delivery)
       if (mode === "BUY") {
         const q = Number(qty);
         if (!q || q <= 0) return setErr("Quantity must be greater than 0.");
         if (q > maxQty) return setErr(`Only ${maxQty} ${defaultUnit} available.`);
+        
+        if (!shippingAddress.trim()) return setErr("Shipping address is required.");
+        if (!contactNumber.trim()) return setErr("Contact number is required.");
 
         await api.post("/orders", {
           cropId: crop._id,
           quantity: q,
+          shippingAddress,
+          contactNumber,
+          notes
         });
 
+        alert("Order placed successfully! Payment: Cash on Delivery.");
         onSuccess?.();
         onClose();
         return;
@@ -48,7 +59,7 @@ const TradeModal = ({ open, onClose, crop, user, onSuccess }) => {
         if (!q || q <= 0) return setErr("Quantity must be greater than 0.");
 
         await api.post("/crops", {
-          cropName: crop?.name,        // normalized field name
+          cropName: crop?.name,
           variety: crop?.variety,
           location: crop?.location,
           pricePerUnit: p,
@@ -88,7 +99,7 @@ const TradeModal = ({ open, onClose, crop, user, onSuccess }) => {
       <div
         onClick={(e) => e.stopPropagation()}
         className="card"
-        style={{ width: "min(560px, 100%)", borderRadius: 18, padding: 18 }}
+        style={{ width: "min(560px, 100%)", borderRadius: 18, padding: 18, maxHeight: "90vh", overflowY: "auto" }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
           <div>
@@ -110,7 +121,7 @@ const TradeModal = ({ open, onClose, crop, user, onSuccess }) => {
             disabled={!canBuy}
             style={{ opacity: canBuy ? 1 : 0.5, cursor: canBuy ? "pointer" : "not-allowed" }}
           >
-            🛒 Buy
+            🛒 Buy (Cash on Delivery)
           </button>
 
           <button
@@ -128,9 +139,12 @@ const TradeModal = ({ open, onClose, crop, user, onSuccess }) => {
         <div style={{ marginTop: 14, display: "grid", gap: 12 }}>
           {mode === "BUY" && (
             <>
-              <div className="kpi">
+              <div className="kpi" style={{ background: "var(--surface)", padding: 12, borderRadius: 8 }}>
                 <p className="label">Available</p>
                 <p className="value">{maxQty} {defaultUnit}</p>
+                <p className="mini" style={{ marginTop: 4 }}>
+                  Price: ৳{crop?.pricePerKg || crop?.pricePerUnit || 0} per {defaultUnit}
+                </p>
               </div>
 
               <div>
@@ -139,13 +153,58 @@ const TradeModal = ({ open, onClose, crop, user, onSuccess }) => {
                   className="input"
                   type="number"
                   min="1"
+                  max={maxQty}
                   value={qty}
                   onChange={(e) => setQty(e.target.value)}
                 />
               </div>
 
+              <div>
+                <label className="mini">Shipping Address *</label>
+                <textarea
+                  className="input"
+                  rows={3}
+                  value={shippingAddress}
+                  onChange={(e) => setShippingAddress(e.target.value)}
+                  placeholder="Enter your full shipping address"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="mini">Contact Number *</label>
+                <input
+                  className="input"
+                  type="tel"
+                  value={contactNumber}
+                  onChange={(e) => setContactNumber(e.target.value)}
+                  placeholder="Enter your phone number"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="mini">Notes (Optional)</label>
+                <textarea
+                  className="input"
+                  rows={2}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Any special instructions or notes"
+                />
+              </div>
+
+              <div style={{ padding: 12, background: "#f0f9ff", borderRadius: 8, border: "1px solid #bae6fd" }}>
+                <p style={{ margin: 0, fontWeight: 600, color: "#0369a1" }}>
+                  💰 Payment Method: Cash on Delivery
+                </p>
+                <p className="mini" style={{ marginTop: 4, color: "#0c4a6e" }}>
+                  Pay when you receive the order
+                </p>
+              </div>
+
               <button className="btn btn-primary" onClick={submit} disabled={loading}>
-                {loading ? "Buying..." : "Confirm Buy"}
+                {loading ? "Placing Order..." : "Place Order (Cash on Delivery)"}
               </button>
             </>
           )}

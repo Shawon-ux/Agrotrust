@@ -243,7 +243,7 @@ const CropList = () => {
                         setTradeOpen(true);
                       }}
                     >
-                      {user?.role === "FARMER" ? "💰 Sell" : "🛒 Buy"}
+                      {user?.role === "FARMER" ? "💰 Sell" : "🛒 Order"}
                     </button>
 
                     <button className="btn">Details</button>
