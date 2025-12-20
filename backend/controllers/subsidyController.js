@@ -6,12 +6,28 @@ exports.getSubsidies = async (req, res) => {
   res.json(list);
 };
 
+exports.createSubsidy = async (req, res) => {
+  const subsidy = await Subsidy.create({
+    ...req.body,
+    issuedBy: req.body.issuedBy || "Ministry of Agriculture", // Default if not provided
+  });
+  res.status(201).json(subsidy);
+};
+
 exports.applySubsidy = async (req, res) => {
   const { subsidyId, note } = req.body;
   if (!subsidyId) return res.status(400).json({ message: "subsidyId required" });
 
   const subsidy = await Subsidy.findById(subsidyId);
   if (!subsidy) return res.status(404).json({ message: "Subsidy not found" });
+
+  if (!subsidy.isActive) {
+    return res.status(400).json({ message: "This subsidy is no longer active" });
+  }
+
+  if (subsidy.deadline && new Date() > new Date(subsidy.deadline)) {
+    return res.status(400).json({ message: "Application deadline has passed" });
+  }
 
   const app = await SubsidyApplication.create({
     subsidy: subsidyId,
