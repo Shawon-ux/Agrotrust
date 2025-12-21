@@ -1,5 +1,6 @@
 // src/pages/Dashboard/FarmerDashboard.js
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import api from "../../api";
 
 const FarmerDashboard = () => {
@@ -31,8 +32,8 @@ const FarmerDashboard = () => {
           </div>
 
           <div className="hero-actions">
-            <a className="btn btn-primary" href="/crops">Browse Crops</a>
-            <a className="btn" href="/subsidies/apply">Apply Subsidy</a>
+            <Link className="btn btn-primary" to="/crops">Browse Crops</Link>
+            <Link className="btn" to="/subsidies">View Subsidies</Link>
           </div>
         </div>
       </div>

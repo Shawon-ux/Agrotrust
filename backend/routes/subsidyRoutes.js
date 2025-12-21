@@ -10,6 +10,13 @@ router.post(
   authorizeRoles("ADMIN", "GOV_OFFICIAL"),
   ctrl.createSubsidy
 );
+
+router.patch(
+  "/:id",
+  protect,
+  authorizeRoles("ADMIN", "GOV_OFFICIAL"),
+  ctrl.updateSubsidy
+);
 router.post("/apply", protect, authorizeRoles("FARMER"), ctrl.applySubsidy);
 router.get("/mine", protect, authorizeRoles("FARMER"), ctrl.mySubsidyApplications);
 
@@ -18,6 +25,13 @@ router.patch(
   protect,
   authorizeRoles("ADMIN", "GOV_OFFICIAL"),
   ctrl.updateApplicationStatus
+);
+
+router.get(
+  "/applications",
+  protect,
+  authorizeRoles("ADMIN", "GOV_OFFICIAL"),
+  ctrl.getAllApplications
 );
 
 module.exports = router;

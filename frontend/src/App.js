@@ -17,7 +17,7 @@ import GovDashboard from "./pages/Dashboard/GovDashboard";
 import CropList from "./pages/Crops/CropList";
 import AdminAddCrop from "./pages/Crops/AdminAddCrop";
 
-import SubsidyApply from "./pages/Subsidies/SubsidyApply";
+
 import SubsidyPage from "./pages/Subsidies/SubsidyPage";
 
 import ComplaintForm from "./pages/Complaints/ComplaintForm";
@@ -99,14 +99,7 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/subsidies/apply"
-            element={
-              <ProtectedRoute allowedRoles={["FARMER"]}>
-                <SubsidyApply />
-              </ProtectedRoute>
-            }
-          />
+
 
           {/* Notifications */}
           <Route
@@ -176,7 +169,7 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-               <Route
+          <Route
             path="/search"
             element={
               <ProtectedRoute>
