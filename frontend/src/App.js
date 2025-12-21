@@ -8,6 +8,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import VerifyEmail from "./pages/VerifyEmail";
 
 import FarmerDashboard from "./pages/Dashboard/FarmerDashboard";
 import BuyerDashboard from "./pages/Dashboard/BuyerDashboard";
@@ -17,7 +18,7 @@ import GovDashboard from "./pages/Dashboard/GovDashboard";
 import CropList from "./pages/Crops/CropList";
 import AdminAddCrop from "./pages/Crops/AdminAddCrop";
 
-import SubsidyApply from "./pages/Subsidies/SubsidyApply";
+
 import SubsidyPage from "./pages/Subsidies/SubsidyPage";
 
 import ComplaintForm from "./pages/Complaints/ComplaintForm";
@@ -43,6 +44,8 @@ const Home = () => {
       </div>
     );
   }
+
+  // if (!user.isVerified) check removed to allow Dashboard access without verification
 
   if (user.role === "FARMER") return <FarmerDashboard />;
   if (user.role === "BUYER") return <BuyerDashboard />;
@@ -71,6 +74,7 @@ const App = () => {
           {/* Auth */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
 
           {/* Crops */}
           <Route
@@ -99,14 +103,7 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/subsidies/apply"
-            element={
-              <ProtectedRoute allowedRoles={["FARMER"]}>
-                <SubsidyApply />
-              </ProtectedRoute>
-            }
-          />
+
 
           {/* Notifications */}
           <Route
@@ -176,7 +173,7 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-               <Route
+          <Route
             path="/search"
             element={
               <ProtectedRoute>
