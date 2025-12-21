@@ -17,8 +17,9 @@ const Register = () => {
     e.preventDefault();
     try {
       setError("");
-      await register(name, email, password, role, phone);
-      navigate("/");
+      const data = await register(name, email, password, role, phone);
+      // Redirect to verify page with email
+      navigate(`/verify-email?email=${encodeURIComponent(data.email)}`);
     } catch (err) {
       const msg =
         err.response?.data?.message || err.message || "Registration failed";

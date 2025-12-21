@@ -8,6 +8,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import VerifyEmail from "./pages/VerifyEmail";
 
 import FarmerDashboard from "./pages/Dashboard/FarmerDashboard";
 import BuyerDashboard from "./pages/Dashboard/BuyerDashboard";
@@ -44,6 +45,8 @@ const Home = () => {
     );
   }
 
+  // if (!user.isVerified) check removed to allow Dashboard access without verification
+
   if (user.role === "FARMER") return <FarmerDashboard />;
   if (user.role === "BUYER") return <BuyerDashboard />;
   if (user.role === "ADMIN") return <AdminDashboard />;
@@ -71,6 +74,7 @@ const App = () => {
           {/* Auth */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
 
           {/* Crops */}
           <Route

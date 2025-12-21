@@ -43,12 +43,12 @@ const Navbar = () => {
     // Common useful pages for logged in users
     items.push({ to: "/notifications", label: "Notifications", icon: <NotificationsNoneIcon fontSize="small" /> });
     items.push({ to: "/chatbot", label: "Chatbot", icon: <SmartToyOutlinedIcon fontSize="small" /> });
-    
+
     // Add Orders link to menu for BUYER, FARMER, ADMIN
     if (["BUYER", "FARMER", "ADMIN"].includes(user.role)) {
       items.push({ to: "/orders", label: "My Orders", icon: <ShoppingCartOutlinedIcon fontSize="small" /> });
     }
-    
+
     // Add Education link
     items.push({ to: "/education", label: "Learning Platform", icon: <SchoolOutlinedIcon fontSize="small" /> });
 
@@ -96,14 +96,14 @@ const Navbar = () => {
                 <NavLink className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`} to="/crops">
                   Crops
                 </NavLink>
-                
+
                 {/* Add Orders link to main navigation for BUYER, FARMER, ADMIN */}
                 {["BUYER", "FARMER", "ADMIN"].includes(user.role) && (
                   <NavLink className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`} to="/orders">
                     Orders
                   </NavLink>
                 )}
-                
+
                 <NavLink className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`} to="/education">
                   Education
                 </NavLink>
@@ -198,7 +198,7 @@ const Navbar = () => {
                         </MenuItem>
 
                         {/* small divider after common items (now includes Orders) */}
-                        {idx === 3 && <Divider />} 
+                        {idx === 3 && <Divider />}
                       </React.Fragment>
                     ))
                   )}
@@ -208,6 +208,13 @@ const Navbar = () => {
               <span className="pill">
                 {user.name} ({user.role})
               </span>
+
+              {/* {!user.isVerified && (
+                <Link to={`/verify-email?email=${user.email}`} className="btn" style={{ background: "#f59e0b", color: "white", border: "none" }}>
+                  Verify Account
+                </Link>
+              )} */}
+
               <button className="btn btn-danger" onClick={logout}>
                 Logout
               </button>
