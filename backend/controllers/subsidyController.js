@@ -6,12 +6,50 @@ exports.getSubsidies = async (req, res) => {
   res.json(list);
 };
 
+exports.createSubsidy = async (req, res) => {
+  const subsidy = await Subsidy.create({
+    ...req.body,
+    issuedBy: req.body.issuedBy || "Ministry of Agriculture", // Default if not provided
+  });
+  res.status(201).json(subsidy);
+};
+
+exports.updateSubsidy = async (req, res) => {
+  try {
+    console.log("updateSubsidy hit. ID:", req.params.id);
+    console.log("Body:", req.body);
+
+    const subsidy = await Subsidy.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!subsidy) {
+      console.log("Subsidy not found in DB");
+      return res.status(404).json({ message: "Subsidy not found" });
+    }
+
+    res.json(subsidy);
+  } catch (error) {
+    console.error("Error updating subsidy:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 exports.applySubsidy = async (req, res) => {
   const { subsidyId, note } = req.body;
   if (!subsidyId) return res.status(400).json({ message: "subsidyId required" });
 
   const subsidy = await Subsidy.findById(subsidyId);
   if (!subsidy) return res.status(404).json({ message: "Subsidy not found" });
+
+  if (!subsidy.isActive) {
+    return res.status(400).json({ message: "This subsidy is no longer active" });
+  }
+
+  if (subsidy.deadline && new Date() > new Date(subsidy.deadline)) {
+    return res.status(400).json({ message: "Application deadline has passed" });
+  }
 
   const app = await SubsidyApplication.create({
     subsidy: subsidyId,
@@ -40,4 +78,12 @@ exports.updateApplicationStatus = async (req, res) => {
 
   await app.save();
   res.json(app);
+};
+// Admin/Gov get all applications
+exports.getAllApplications = async (req, res) => {
+  const apps = await SubsidyApplication.find()
+    .populate("subsidy")
+    .populate("farmer", "name email")
+    .sort({ createdAt: -1 });
+  res.json(apps);
 };

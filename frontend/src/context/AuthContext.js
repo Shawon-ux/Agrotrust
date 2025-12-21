@@ -20,6 +20,7 @@ export const AuthProvider = ({ children }) => {
           name: parsed.name,
           email: parsed.email,
           role: parsed.role,
+          isVerified: parsed.isVerified, // ✅ Add isVerified
         });
       }
     } catch (e) {
@@ -37,9 +38,10 @@ export const AuthProvider = ({ children }) => {
       name: data.name,
       email: data.email,
       role: data.role,
+      isVerified: data.isVerified, // ✅ Add isVerified
     };
     setUser(u);
-    localStorage.setItem("agrotrust_user", JSON.stringify(data)); // keep token too
+    localStorage.setItem("agrotrust_user", JSON.stringify(u)); // Save minimal user data + verified status
     localStorage.setItem("agrotrust_token", data.token);
   };
 
@@ -54,6 +56,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // ❌ Register no longer auto-logins. It returns message & email
   const register = async (name, email, password, role, phone) => {
     try {
       const res = await api.post("/auth/register", {
@@ -63,7 +66,7 @@ export const AuthProvider = ({ children }) => {
         role,
         phone,
       });
-      handleAuthSuccess(res.data);
+      // Do NOT call handleAuthSuccess. Just return data.
       return res.data;
     } catch (err) {
       console.error("Register error (frontend):", err);

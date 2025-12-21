@@ -4,10 +4,14 @@ const router = express.Router();
 const {
   registerUser,
   loginUser,
+  verifyEmail,
 } = require("../controllers/authController");
 
 // Register
 router.post("/register", registerUser);
+
+// Verify Email
+router.post("/verify-email", verifyEmail);
 
 // Login
 router.post("/login", loginUser);
