@@ -2,7 +2,7 @@
 const Crop = require("../models/Crop");
 const Order = require("../models/Order");
 
-// POST /api/orders (BUYER creates order)
+// POST /api/orders (BUYER or ADMIN creates order)
 exports.createOrder = async (req, res) => {
   try {
     const { cropId, quantity, shippingAddress, contactNumber, notes } = req.body;
@@ -43,12 +43,12 @@ exports.createOrder = async (req, res) => {
       unit: crop.unit || "kg",
       pricePerUnit,
       totalPrice,
-      shippingAddress,
-      contactNumber,
-      notes: notes || "",
       status: "PENDING",
       paymentMethod: "CASH_ON_DELIVERY",
-      paymentStatus: "PENDING"
+      paymentStatus: "PENDING",
+      shippingAddress,
+      contactNumber,
+      notes
     });
 
     // Reduce crop stock
@@ -58,7 +58,7 @@ exports.createOrder = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: "Order placed successfully! Payment: Cash on Delivery.",
+      message: "Order placed successfully! Cash on delivery.",
       order
     });
   } catch (err) {
@@ -69,12 +69,21 @@ exports.createOrder = async (req, res) => {
   }
 };
 
-// GET /api/orders/my-orders (Get buyer's orders)
+// GET /api/orders/my-orders (Get buyer's or admin's orders)
 exports.getMyOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ buyer: req.user.id })
+    let query = { buyer: req.user.id };
+    
+    // If user is admin, also include orders where they might be the farmer
+    if (req.user.role === "ADMIN") {
+      // Admin can see orders they placed as buyer AND orders where they're the farmer
+      query = { $or: [{ buyer: req.user.id }, { farmer: req.user.id }] };
+    }
+    
+    const orders = await Order.find(query)
       .populate("crop", "cropName imageUrl location")
       .populate("farmer", "name phone")
+      .populate("buyer", "name phone email")
       .sort({ createdAt: -1 });
     
     res.json({ success: true, orders });
@@ -103,12 +112,12 @@ exports.getFarmerOrders = async (req, res) => {
   }
 };
 
-// GET /api/orders/all (Admin and Gov only - get all orders)
+// GET /api/orders/all (Admin only - get all orders)
 exports.getAllOrders = async (req, res) => {
   try {
-    if (req.user.role !== "ADMIN" && req.user.role !== "GOV_OFFICIAL") {
+    if (req.user.role !== "ADMIN") {
       return res.status(403).json({ 
-        message: "Admin or Government Official only" 
+        message: "Admin only" 
       });
     }
 
@@ -146,27 +155,14 @@ exports.updateOrderStatus = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    // Check if user has permission 
-    // - Farmer can update their own orders
-    // - Buyer can cancel their own pending orders
-    // - Admin/Gov can update any order
+    // Check if user has permission (farmer can update their orders, admin can update any)
     const isFarmer = order.farmer.toString() === req.user.id;
-    const isBuyer = order.buyer.toString() === req.user.id;
-    const isAdminOrGov = ["ADMIN", "GOV_OFFICIAL"].includes(req.user.role);
+    const isAdmin = req.user.role === "ADMIN";
     
-    if (!isFarmer && !isBuyer && !isAdminOrGov) {
+    if (!isFarmer && !isAdmin) {
       return res.status(403).json({ 
         message: "Not authorized to update this order" 
       });
-    }
-
-    // Buyer can only cancel pending orders
-    if (isBuyer && !isAdminOrGov) {
-      if (status !== "CANCELLED" || order.status !== "PENDING") {
-        return res.status(403).json({ 
-          message: "Buyer can only cancel pending orders" 
-        });
-      }
     }
 
     order.status = status;
@@ -174,16 +170,6 @@ exports.updateOrderStatus = async (req, res) => {
     // If delivered, mark payment as completed for cash on delivery
     if (status === "DELIVERED" && order.paymentMethod === "CASH_ON_DELIVERY") {
       order.paymentStatus = "COMPLETED";
-    }
-    
-    // If cancelled, restore crop quantity
-    if (status === "CANCELLED" && order.status !== "CANCELLED") {
-      const crop = await Crop.findById(order.crop);
-      if (crop) {
-        crop.quantityAvailable += order.quantity;
-        crop.status = crop.quantityAvailable > 0 ? "AVAILABLE" : "SOLD_OUT";
-        await crop.save();
-      }
     }
     
     await order.save();
@@ -238,40 +224,6 @@ exports.updatePaymentStatus = async (req, res) => {
     });
   } catch (err) {
     console.error("updatePaymentStatus error:", err);
-    res.status(500).json({ 
-      message: err.message || "Server error" 
-    });
-  }
-};
-
-// GET /api/orders/:id (Get single order details)
-exports.getOrderById = async (req, res) => {
-  try {
-    const { id } = req.params;
-    
-    const order = await Order.findById(id)
-      .populate("buyer", "name email phone")
-      .populate("farmer", "name email phone")
-      .populate("crop", "cropName imageUrl location variety");
-
-    if (!order) {
-      return res.status(404).json({ message: "Order not found" });
-    }
-
-    // Check if user has permission to view this order
-    const isBuyer = order.buyer._id.toString() === req.user.id;
-    const isFarmer = order.farmer._id.toString() === req.user.id;
-    const isAdminOrGov = ["ADMIN", "GOV_OFFICIAL"].includes(req.user.role);
-    
-    if (!isBuyer && !isFarmer && !isAdminOrGov) {
-      return res.status(403).json({ 
-        message: "Not authorized to view this order" 
-      });
-    }
-
-    res.json({ success: true, order });
-  } catch (err) {
-    console.error("getOrderById error:", err);
     res.status(500).json({ 
       message: err.message || "Server error" 
     });
