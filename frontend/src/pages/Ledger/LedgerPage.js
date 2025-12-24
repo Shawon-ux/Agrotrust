@@ -1,145 +1,191 @@
-// import React, { useEffect, useState } from "react";
-// import api from "../../api";
-
-// export default function LedgerPage() {
-//   const [items, setItems] = useState([]);
-//   const [err, setErr] = useState("");
-
-//   const load = async () => {
-//     try {
-//       setErr("");
-//       const res = await api.get("/ledger");
-//       setItems(res.data || []);
-//     } catch (e) {
-//       setErr(
-//         e.response?.data?.message ||
-//           "Failed to load ledger (Admin/Gov only)"
-//       );
-//     }
-//   };
-
-//   useEffect(() => {
-//     load();
-//   }, []);
-
-//   return (
-//     <div className="container">
-//       <div className="hero">
-//         <h1 className="h1">Blockchain Ledger</h1>
-//         <p className="subhead">
-//           Tamper-evident ledger with chained hashes
-//         </p>
-//       </div>
-
-//       {err && <div className="error">{err}</div>}
-
-//       {items.map((x) => (
-//         <div className="card" key={x._id} style={{ marginBottom: 12 }}>
-//           <div style={{ marginBottom: 6 }}>
-//             <b>Block #{x.index}</b> • {x.action}
-//           </div>
-
-//           <div className="mini">
-//             Reference: {x.refType} {x.refId || "-"}
-//           </div>
-
-//           <div className="mini">
-//             Actor: {x.actor?.name || "System"} ({x.actor?.role})
-//           </div>
-
-//           <div
-//             style={{
-//               marginTop: 8,
-//               fontFamily: "monospace",
-//               fontSize: 12,
-//               color: "var(--muted)",
-//             }}
-//           >
-//             <div>
-//               <b>Hash:</b> {x.hash}
-//             </div>
-//             <div>
-//               <b>Previous:</b> {x.previousHash}
-//             </div>
-//           </div>
-
-//           <div className="mini" style={{ marginTop: 6 }}>
-//             Time: {new Date(x.createdAt).toLocaleString()}
-//           </div>
-//         </div>
-//       ))}
-//     </div>
-//   );
-// }
-
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 export default function LedgerPage() {
-  const [items, setItems] = useState([]);
+  const [view, setView] = useState("HOME");
 
-  // 🔒 DEMO LEDGER DATA (HARDCODED)
-  useEffect(() => {
-    const demoData = [
-      {
-        _id: "1",
-        action: "SUBSIDY_APPROVED",
-        refType: "SUBSIDY",
-        refId: "SUB-1023",
-        dataHash: "a9f5c1e2b7d93a81f0c4e9a6a12f3b9c7e2d4a6f",
-        createdAt: "2025-08-10",
-      },
-      {
-        _id: "2",
-        action: "CROP_VERIFIED",
-        refType: "CROP",
-        refId: "CROP-556",
-        dataHash: "c4e2f9a8b7d1e6a03f5c9a7e2b8d4f6a1c3e9d",
-        createdAt: "2025-08-11",
-      },
-      {
-        _id: "3",
-        action: "COMPLAINT_RESOLVED",
-        refType: "COMPLAINT",
-        refId: "COMP-88",
-        dataHash: "f1a7d9e3c8b2a5e6d4f9c0a8b7e1d3f5c6a2",
-        createdAt: "2025-08-12",
-      },
-    ];
+  const ledger = {
+    farmer: { subsidy: 5000, listing: 200, fee: 50 },
+    government: { subsidy: 5000, verify: 500, admin: 300 },
+    admin: { system: 300, audit: 200, ops: 400 },
+    buyer: { purchase: 7000, fee: 200 },
+  };
 
-    setItems(demoData);
-  }, []);
+  const daily = [
+    ["Farmer", "Subsidy Received", 5000],
+    ["Government", "Subsidy Paid", 5000],
+    ["Government", "Verification Cost", 500],
+    ["Admin", "System Operation Cost", 300],
+    ["Buyer", "Crop Purchase", 7000],
+    ["Buyer", "Platform Fee", 200],
+  ];
 
-  return (
-    <div className="container">
-      <div className="hero">
-        <h1 className="h1">Blockchain Ledger</h1>
-        <p className="subhead">
-          Tamper-evident ledger 
-        </p>
-      </div>
+  const farmerNet = ledger.farmer.subsidy - ledger.farmer.listing - ledger.farmer.fee;
+  const govTotal = ledger.government.subsidy + ledger.government.verify + ledger.government.admin;
+  const adminTotal = ledger.admin.system + ledger.admin.audit + ledger.admin.ops;
+  const buyerTotal = ledger.buyer.purchase + ledger.buyer.fee;
 
-      {items.map((x) => (
-        <div className="card" key={x._id} style={{ marginBottom: 12 }}>
-          <div>
-            <b>{x.action}</b> • {x.refType}
-          </div>
-
-          <div className="mini">Reference ID: {x.refId}</div>
-          <div className="mini">Date: {x.createdAt}</div>
-
-          <div
-            style={{
-              marginTop: 6,
-              fontFamily: "monospace",
-              fontSize: 12,
-              color: "var(--muted)",
-              wordBreak: "break-all",
-            }}
-          >
-            Hash: {x.dataHash}
-          </div>
-        </div>
-      ))}
+  const RoleCard = ({ title, color, onClick }) => (
+    <div
+      onClick={onClick}
+      style={{
+        background: `linear-gradient(135deg, ${color}, #000)`,
+        padding: 30,
+        borderRadius: 20,
+        color: "#fff",
+        cursor: "pointer",
+        boxShadow: "0 10px 25px rgba(0,0,0,0.3)",
+      }}
+    >
+      <h2>{title}</h2>
+      <p style={{ opacity: 0.8 }}>View financial ledger</p>
     </div>
   );
+
+  const BackBtn = () => (
+    <button
+      onClick={() => setView("HOME")}
+      style={{
+        marginTop: 30,
+        padding: "12px 30px",
+        borderRadius: 30,
+        border: "none",
+        background: "linear-gradient(135deg,#3498db,#2ecc71)",
+        color: "#fff",
+        fontSize: 16,
+        cursor: "pointer",
+        boxShadow: "0 5px 15px rgba(0,0,0,0.2)",
+      }}
+    >
+      ⬅ Back to Ledger
+    </button>
+  );
+
+  const StatBox = ({ label, value, color }) => (
+    <div
+      style={{
+        flex: 1,
+        background: color,
+        color: "#fff",
+        padding: 20,
+        borderRadius: 16,
+        textAlign: "center",
+        boxShadow: "0 5px 15px rgba(0,0,0,0.2)",
+      }}
+    >
+      <h4>{label}</h4>
+      <h2>৳{value}</h2>
+    </div>
+  );
+
+  if (view === "HOME")
+    return (
+      <div className="container">
+        <h1 className="h1">Blockchain Financial Ledger</h1>
+        <p className="subhead">Smart subsidy & cost tracking system</p>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 25 }}>
+          <RoleCard title="👨‍🌾 Farmer" color="#27ae60" onClick={() => setView("FARMER")} />
+          <RoleCard title="🏛 Government" color="#2980b9" onClick={() => setView("GOV")} />
+          <RoleCard title="🧑‍💼 Admin" color="#8e44ad" onClick={() => setView("ADMIN")} />
+          <RoleCard title="🛒 Buyer" color="#f39c12" onClick={() => setView("BUYER")} />
+          <RoleCard title="📅 Daily Ledger" color="#2c3e50" onClick={() => setView("DAILY")} />
+        </div>
+      </div>
+    );
+
+  const FancyCalc = (title, stats, totalLabel, totalValue) => (
+    <div className="container">
+      <h2>{title}</h2>
+      <div style={{ display: "flex", gap: 20, marginTop: 20 }}>
+        {stats}
+      </div>
+      <div
+        style={{
+          marginTop: 30,
+          background: "#111",
+          color: "#0f0",
+          padding: 25,
+          borderRadius: 16,
+          fontSize: 22,
+          textAlign: "center",
+        }}
+      >
+        {totalLabel}: ৳{totalValue}
+      </div>
+      <BackBtn />
+    </div>
+  );
+
+  if (view === "FARMER")
+    return FancyCalc(
+      "👨‍🌾 Farmer Ledger",
+      <>
+        <StatBox label="Subsidy" value={ledger.farmer.subsidy} color="#2ecc71" />
+        <StatBox label="Listing Cost" value={ledger.farmer.listing} color="#e67e22" />
+        <StatBox label="Transaction Fee" value={ledger.farmer.fee} color="#e74c3c" />
+      </>,
+      "Net Farmer Income",
+      farmerNet
+    );
+
+  if (view === "GOV")
+    return FancyCalc(
+      "🏛 Government Ledger",
+      <>
+        <StatBox label="Subsidy Paid" value={ledger.government.subsidy} color="#3498db" />
+        <StatBox label="Verification" value={ledger.government.verify} color="#9b59b6" />
+        <StatBox label="Admin Cost" value={ledger.government.admin} color="#e74c3c" />
+      </>,
+      "Total Government Spending",
+      govTotal
+    );
+
+  if (view === "ADMIN")
+    return FancyCalc(
+      "🧑‍💼 Admin Ledger",
+      <>
+        <StatBox label="System" value={ledger.admin.system} color="#1abc9c" />
+        <StatBox label="Audit" value={ledger.admin.audit} color="#f39c12" />
+        <StatBox label="Daily Ops" value={ledger.admin.ops} color="#e67e22" />
+      </>,
+      "Total Admin Cost",
+      adminTotal
+    );
+
+  if (view === "BUYER")
+    return FancyCalc(
+      "🛒 Buyer Ledger",
+      <>
+        <StatBox label="Purchase" value={ledger.buyer.purchase} color="#f1c40f" />
+        <StatBox label="Platform Fee" value={ledger.buyer.fee} color="#e74c3c" />
+      </>,
+      "Total Buyer Cost",
+      buyerTotal
+    );
+
+  if (view === "DAILY")
+    return (
+      <div className="container">
+        <h2>📅 Daily Ledger – 15 March 2025</h2>
+        <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 20 }}>
+          <thead style={{ background: "#000", color: "#fff" }}>
+            <tr>
+              <th>Role</th>
+              <th>Cost Type</th>
+              <th>BDT</th>
+            </tr>
+          </thead>
+          <tbody>
+            {daily.map((x, i) => (
+              <tr key={i} style={{ background: i % 2 ? "#eee" : "#fff" }}>
+                <td>{x[0]}</td>
+                <td>{x[1]}</td>
+                <td><b>{x[2]}</b></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <BackBtn />
+      </div>
+    );
 }
