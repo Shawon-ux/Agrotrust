@@ -1,8 +1,10 @@
 // src/components/TradeModal.js
 import React, { useMemo, useState } from "react";
 import api from "../api";
+import { useNavigate } from "react-router-dom";
 
 const TradeModal = ({ open, onClose, crop, user, onSuccess }) => {
+  const navigate = useNavigate();
   const role = user?.role;
   const isBuyer = role === "BUYER";
   const isFarmer = role === "FARMER";
@@ -52,8 +54,15 @@ const TradeModal = ({ open, onClose, crop, user, onSuccess }) => {
         return;
       }
 
-      // FARMER or ADMIN flow -> create listing (new crop)
-      if (mode === "SELL") {
+      // FARMER flow -> redirect to crop request page
+      if (mode === "SELL" && isFarmer) {
+        onClose();
+        navigate("/crops/request");
+        return;
+      }
+
+      // ADMIN flow -> create listing (new crop)
+      if (mode === "SELL" && isAdmin) {
         const q = Number(qty);
         const p = Number(price);
 
@@ -116,7 +125,7 @@ const TradeModal = ({ open, onClose, crop, user, onSuccess }) => {
           <button className="btn" onClick={onClose}>✕</button>
         </div>
 
-        {/* Mode switch - show both for ADMIN */}
+        {/* Mode switch - show both for ADMIN, only Buy for farmer */}
         <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
           <button
             className={`chip ${mode === "BUY" ? "active" : ""}`}
@@ -133,7 +142,7 @@ const TradeModal = ({ open, onClose, crop, user, onSuccess }) => {
             disabled={!canSell}
             style={{ opacity: canSell ? 1 : 0.5, cursor: canSell ? "pointer" : "not-allowed" }}
           >
-            💰 Sell
+            {isFarmer ? "📝 Request Crop" : "💰 Sell"}
           </button>
         </div>
 
@@ -217,15 +226,30 @@ const TradeModal = ({ open, onClose, crop, user, onSuccess }) => {
             </>
           )}
 
-          {mode === "SELL" && (
+          {mode === "SELL" && isFarmer && (
             <>
-              {isAdmin && (
-                <div style={{ padding: 12, background: "#fef3c7", borderRadius: 8, border: "1px solid #fbbf24" }}>
-                  <p style={{ margin: 0, fontWeight: 600, color: "#92400e" }}>
-                    ⚠️ You are creating a crop listing as an administrator
-                  </p>
-                </div>
-              )}
+              <div style={{ padding: 12, background: "#f0f9ff", borderRadius: 8, border: "1px solid #bae6fd" }}>
+                <p style={{ margin: 0, fontWeight: 600, color: "#0369a1" }}>
+                  📝 Crop Request System
+                </p>
+                <p className="mini" style={{ marginTop: 4, color: "#0c4a6e" }}>
+                  Farmers need admin approval to list crops. You'll be redirected to the request form.
+                </p>
+              </div>
+
+              <button className="btn btn-primary" onClick={submit} disabled={loading}>
+                {loading ? "Redirecting..." : "Go to Crop Request Form"}
+              </button>
+            </>
+          )}
+
+          {mode === "SELL" && isAdmin && (
+            <>
+              <div style={{ padding: 12, background: "#fef3c7", borderRadius: 8, border: "1px solid #fbbf24" }}>
+                <p style={{ margin: 0, fontWeight: 600, color: "#92400e" }}>
+                  ⚠️ You are creating a crop listing as an administrator
+                </p>
+              </div>
               
               <div>
                 <label className="mini">Price per {defaultUnit}</label>

@@ -32,6 +32,8 @@ import LedgerPage from "./pages/Ledger/LedgerPage";
 import OrdersPage from "./pages/Orders/OrdersPage";
 import OrderDetailPage from "./pages/Orders/OrderDetailPage";
 import SearchPage from "./pages/Search/SearchPage";
+import RequestCrop from "./pages/Crops/RequestCrop";
+import CropRequestsAdmin from "./pages/Crops/CropRequestsAdmin";
 
 const Home = () => {
   const { user } = useAuth();
@@ -194,6 +196,22 @@ const App = () => {
             element={
               <ProtectedRoute allowedRoles={["BUYER", "FARMER", "ADMIN", "GOV_OFFICIAL"]}>
                 <OrderDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/crops/request"
+            element={
+              <ProtectedRoute allowedRoles={["FARMER"]}>
+                <RequestCrop />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/crops/requests"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN"]}>
+                <CropRequestsAdmin />
               </ProtectedRoute>
             }
           />

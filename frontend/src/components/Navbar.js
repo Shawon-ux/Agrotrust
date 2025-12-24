@@ -21,6 +21,7 @@ import PaymentsOutlinedIcon from "@mui/icons-material/PaymentsOutlined";
 import SchoolOutlinedIcon from "@mui/icons-material/SchoolOutlined";
 // Add Orders icon
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
+import AddCircleOutlineOutlinedIcon from "@mui/icons-material/AddCircleOutlineOutlined";
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -73,7 +74,13 @@ const Navbar = () => {
       items.push({ to: "/ledger", label: "Blockchain Ledger", icon: <AccountBalanceWalletOutlinedIcon fontSize="small" /> });
       items.push({ to: "/analytics", label: "Analytics", icon: <InsightsOutlinedIcon fontSize="small" /> });
     }
-
+    // In the moreItems array in Navbar.js, add for FARMER:
+    if (user.role === "FARMER") {
+      items.push({ to: "/subsidies", label: "Subsidies", icon: <PaymentsOutlinedIcon fontSize="small" /> });
+      items.push({ to: "/subsidies/apply", label: "Apply Subsidy", icon: <PaymentsOutlinedIcon fontSize="small" /> });
+      items.push({ to: "/orders", label: "My Orders", icon: <ShoppingCartOutlinedIcon fontSize="small" /> });
+      items.push({ to: "/crops/request", label: "Request Crop", icon: <AddCircleOutlineOutlinedIcon fontSize="small" /> }); // Add this line
+    }
     return items;
   }, [user]);
 
