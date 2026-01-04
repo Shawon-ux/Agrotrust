@@ -29,9 +29,24 @@ exports.createComplaint = async (req, res) => {
       return res.status(400).json({ message: "complaintType and description are required" });
     }
 
+    let againstUserId = undefined;
+    if (againstUser) {
+      // Check if input looks like an email
+      if (againstUser.includes("@")) {
+        const userFound = await require("../models/User").findOne({ email: againstUser });
+        if (!userFound) {
+          return res.status(404).json({ message: `User with email '${againstUser}' not found` });
+        }
+        againstUserId = userFound._id;
+      } else {
+        // Assume it's an ID (backward compatibility)
+        againstUserId = againstUser;
+      }
+    }
+
     const complaint = await Complaint.create({
       createdBy: req.user._id,
-      againstUser: againstUser || undefined,
+      againstUser: againstUserId,
       complaintType,
       description,
       status: "PENDING",
