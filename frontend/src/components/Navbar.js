@@ -19,8 +19,8 @@ import InsightsOutlinedIcon from "@mui/icons-material/InsightsOutlined";
 import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
 import PaymentsOutlinedIcon from "@mui/icons-material/PaymentsOutlined";
 import SchoolOutlinedIcon from "@mui/icons-material/SchoolOutlined";
-// Add Orders icon
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
+import AddCircleOutlineOutlinedIcon from "@mui/icons-material/AddCircleOutlineOutlined";
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -40,25 +40,23 @@ const Navbar = () => {
 
     const items = [];
 
-    // Common useful pages for logged in users
+    // Common items for all logged-in users
     items.push({ to: "/notifications", label: "Notifications", icon: <NotificationsNoneIcon fontSize="small" /> });
     items.push({ to: "/chatbot", label: "Chatbot", icon: <SmartToyOutlinedIcon fontSize="small" /> });
+    items.push({ to: "/education", label: "Learning Platform", icon: <SchoolOutlinedIcon fontSize="small" /> });
 
-    // Add Orders link to menu for BUYER, FARMER, ADMIN
+    // Orders for BUYER, FARMER, ADMIN
     if (["BUYER", "FARMER", "ADMIN"].includes(user.role)) {
       items.push({ to: "/orders", label: "My Orders", icon: <ShoppingCartOutlinedIcon fontSize="small" /> });
     }
 
-    // Add Education link
-    items.push({ to: "/education", label: "Learning Platform", icon: <SchoolOutlinedIcon fontSize="small" /> });
-
-    // FARMER pages
+    // FARMER-specific items — NOTE: "Apply Subsidy" removed as requested
     if (user.role === "FARMER") {
       items.push({ to: "/subsidies", label: "Subsidies", icon: <PaymentsOutlinedIcon fontSize="small" /> });
-      items.push({ to: "/subsidies/apply", label: "Apply Subsidy", icon: <PaymentsOutlinedIcon fontSize="small" /> });
+      items.push({ to: "/crops/request", label: "Request Crop", icon: <AddCircleOutlineOutlinedIcon fontSize="small" /> });
     }
 
-    // ADMIN pages
+    // ADMIN-specific items
     if (user.role === "ADMIN") {
       items.push({ to: "/admin", label: "Admin Panel", icon: <AdminPanelSettingsOutlinedIcon fontSize="small" /> });
       items.push({ to: "/analytics", label: "Analytics", icon: <InsightsOutlinedIcon fontSize="small" /> });
@@ -66,7 +64,7 @@ const Navbar = () => {
       items.push({ to: "/ledger", label: "Blockchain Ledger", icon: <AccountBalanceWalletOutlinedIcon fontSize="small" /> });
     }
 
-    // GOV pages
+    // GOV_OFFICIAL-specific items
     if (user.role === "GOV_OFFICIAL") {
       items.push({ to: "/subsidies", label: "Subsidy Programs", icon: <PaymentsOutlinedIcon fontSize="small" /> });
       items.push({ to: "/verification", label: "Verification", icon: <VerifiedUserOutlinedIcon fontSize="small" /> });
@@ -97,7 +95,6 @@ const Navbar = () => {
                   Crops
                 </NavLink>
 
-                {/* Add Orders link to main navigation for BUYER, FARMER, ADMIN */}
                 {["BUYER", "FARMER", "ADMIN"].includes(user.role) && (
                   <NavLink className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`} to="/orders">
                     Orders
@@ -121,9 +118,7 @@ const Navbar = () => {
         <div className="nav-right">
           {user ? (
             <>
-              {/* ✅ ICON ROW: show for ALL logged-in users */}
               <div className="icon-row">
-                {/* Add Orders icon to icon row for quick access */}
                 {["BUYER", "FARMER", "ADMIN"].includes(user.role) && (
                   <Link
                     className={`icon-btn ${isActivePath("/orders") ? "active" : ""}`}
@@ -153,7 +148,6 @@ const Navbar = () => {
                   <SmartToyOutlinedIcon fontSize="small" />
                 </Link>
 
-                {/* ✅ 3 dots menu: show for ALL logged-in users */}
                 <IconButton
                   onClick={openMenu}
                   className={`icon-btn ${open ? "active" : ""}`}
@@ -197,7 +191,7 @@ const Navbar = () => {
                           {it.label}
                         </MenuItem>
 
-                        {/* small divider after common items (now includes Orders) */}
+                        {/* Divider after the 4th item (common section: Notifications, Chatbot, Education, Orders) */}
                         {idx === 3 && <Divider />}
                       </React.Fragment>
                     ))
@@ -208,12 +202,6 @@ const Navbar = () => {
               <span className="pill">
                 {user.name} ({user.role})
               </span>
-
-              {/* {!user.isVerified && (
-                <Link to={`/verify-email?email=${user.email}`} className="btn" style={{ background: "#f59e0b", color: "white", border: "none" }}>
-                  Verify Account
-                </Link>
-              )} */}
 
               <button className="btn btn-danger" onClick={logout}>
                 Logout

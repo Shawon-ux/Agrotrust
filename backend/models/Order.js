@@ -54,10 +54,12 @@ const orderSchema = new mongoose.Schema(
       default: "PENDING"
     },
     shippingAddress: {
-      type: String
+      type: String,
+      required: true
     },
     contactNumber: {
-      type: String
+      type: String,
+      required: true
     },
     notes: {
       type: String

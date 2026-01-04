@@ -10,25 +10,60 @@ const {
   createCrop,
   getAllCrops,
   setCropAvailability,
+  requestCropAddition,
+  getCropRequests,
+  approveCropRequest,
+  getMyCrops,
+  getMyCropRequests
 } = require("../controllers/cropController");
 
-// View crops
+// View crops (public)
 router.get("/", protect, getAllCrops);
 
-// Admin add crop (with optional image upload field name: "image")
-// This is the existing route for POST /api/crops
+// FARMER can request to add crop (new route)
 router.post(
-  "/",
+  "/request",
   protect,
-  authorizeRoles("ADMIN"),
+  authorizeRoles("FARMER"),
   upload.single("image"),
-  createCrop
+  requestCropAddition
 );
 
-// NEW ROUTE: Admin add crop via POST /api/crops/admin
-// This matches what your frontend is calling
+// Farmer's crops
+router.get(
+  "/my-crops",
+  protect,
+  authorizeRoles("FARMER"),
+  getMyCrops
+);
+
+// Farmer's crop requests
+router.get(
+  "/my-requests",
+  protect,
+  authorizeRoles("FARMER"),
+  getMyCropRequests
+);
+
+// Admin view crop requests
+router.get(
+  "/requests",
+  protect,
+  authorizeRoles("ADMIN"),
+  getCropRequests
+);
+
+// Admin approve/reject crop request
+router.patch(
+  "/requests/:id",
+  protect,
+  authorizeRoles("ADMIN"),
+  approveCropRequest
+);
+
+// ADMIN add crop directly (with optional image upload field name: "image")
 router.post(
-  "/admin", // <-- This is the key change
+  "/",
   protect,
   authorizeRoles("ADMIN"),
   upload.single("image"),
