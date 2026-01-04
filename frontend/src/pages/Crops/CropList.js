@@ -1,3 +1,4 @@
+// src/pages/Crops/CropList.js
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api";
@@ -12,6 +13,7 @@ const CropList = () => {
   const nav = useNavigate();
   const { user } = useAuth();
   const isAdmin = user?.role === "ADMIN";
+  const isFarmer = user?.role === "FARMER";
 
   const [tradeOpen, setTradeOpen] = useState(false);
   const [selectedCrop, setSelectedCrop] = useState(null);
@@ -128,6 +130,12 @@ const CropList = () => {
                 + Add Crop
               </button>
             )}
+            
+            {isFarmer && (
+              <button className="btn btn-primary" onClick={() => nav("/crops/request")}>
+                + Request Crop
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -163,7 +171,9 @@ const CropList = () => {
         <div className="card">
           <h3 style={{ marginTop: 0 }}>No crops available</h3>
           <p style={{ color: "var(--muted)", marginBottom: 0 }}>
-            {isAdmin ? "Add a new crop to get started." : "Check back later for available crops."}
+            {isAdmin ? "Add a new crop to get started." : 
+             isFarmer ? "Request to add your crops or check back later." : 
+             "Check back later for available crops."}
           </p>
         </div>
       ) : filtered.length === 0 ? (
@@ -243,7 +253,7 @@ const CropList = () => {
                         setTradeOpen(true);
                       }}
                     >
-                      {user?.role === "FARMER" ? "💰 Sell" : "🛒 Order"}
+                      {user?.role === "FARMER" ? "💰 Sell" : user?.role === "ADMIN" ? "💰 Sell" : "🛒 Order"}
                     </button>
 
                     <button className="btn">Details</button>

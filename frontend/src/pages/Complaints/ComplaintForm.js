@@ -192,12 +192,12 @@ const ComplaintForm = () => {
 
         <form className="form" onSubmit={submitComplaint}>
           <div>
-            <label className="mini">Against User (optional user ID)</label>
+            <label className="mini">Against User Email (Optional)</label>
             <input
               className="input"
               value={againstUser}
               onChange={(e) => setAgainstUser(e.target.value)}
-              placeholder="Optional user MongoDB ObjectId"
+              placeholder="Enter email address of the user..."
             />
           </div>
 
