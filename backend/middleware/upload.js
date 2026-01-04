@@ -3,13 +3,14 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
-const dir = path.join(__dirname, "..", "uploads", "crops");
+// Save directly to the 'uploads' folder (not 'uploads/crops')
+const dir = path.join(__dirname, "..", "uploads");
 fs.mkdirSync(dir, { recursive: true });
 
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, dir),
   filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname);
+    const ext = path.extname(file.originalname).toLowerCase();
     cb(null, `crop-${Date.now()}${ext}`);
   },
 });

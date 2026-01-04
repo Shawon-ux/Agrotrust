@@ -8,6 +8,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import VerifyEmail from "./pages/VerifyEmail";
 
 import FarmerDashboard from "./pages/Dashboard/FarmerDashboard";
 import BuyerDashboard from "./pages/Dashboard/BuyerDashboard";
@@ -17,7 +18,7 @@ import GovDashboard from "./pages/Dashboard/GovDashboard";
 import CropList from "./pages/Crops/CropList";
 import AdminAddCrop from "./pages/Crops/AdminAddCrop";
 
-import SubsidyApply from "./pages/Subsidies/SubsidyApply";
+
 import SubsidyPage from "./pages/Subsidies/SubsidyPage";
 
 import ComplaintForm from "./pages/Complaints/ComplaintForm";
@@ -28,10 +29,11 @@ import FeedbackForm from "./pages/Feedback/FeedbackForm";
 import NotificationsPage from "./pages/Notifications/NotificationsPage";
 import ChatbotPage from "./pages/Chatbot/ChatbotPage";
 import LedgerPage from "./pages/Ledger/LedgerPage";
-
-
-
+import OrdersPage from "./pages/Orders/OrdersPage";
+import OrderDetailPage from "./pages/Orders/OrderDetailPage";
 import SearchPage from "./pages/Search/SearchPage";
+import RequestCrop from "./pages/Crops/RequestCrop";
+import CropRequestsAdmin from "./pages/Crops/CropRequestsAdmin";
 
 const Home = () => {
   const { user } = useAuth();
@@ -44,6 +46,8 @@ const Home = () => {
       </div>
     );
   }
+
+  // if (!user.isVerified) check removed to allow Dashboard access without verification
 
   if (user.role === "FARMER") return <FarmerDashboard />;
   if (user.role === "BUYER") return <BuyerDashboard />;
@@ -72,6 +76,7 @@ const App = () => {
           {/* Auth */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
 
           {/* Crops */}
           <Route
@@ -100,14 +105,7 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/subsidies/apply"
-            element={
-              <ProtectedRoute allowedRoles={["FARMER"]}>
-                <SubsidyApply />
-              </ProtectedRoute>
-            }
-          />
+
 
           {/* Notifications */}
           <Route
@@ -177,7 +175,7 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-               <Route
+          <Route
             path="/search"
             element={
               <ProtectedRoute>
@@ -185,7 +183,38 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-
+          <Route
+            path="/orders"
+            element={
+              <ProtectedRoute allowedRoles={["BUYER", "FARMER", "ADMIN", "GOV_OFFICIAL"]}>
+                <OrdersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/orders/:id"
+            element={
+              <ProtectedRoute allowedRoles={["BUYER", "FARMER", "ADMIN", "GOV_OFFICIAL"]}>
+                <OrderDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/crops/request"
+            element={
+              <ProtectedRoute allowedRoles={["FARMER"]}>
+                <RequestCrop />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/crops/requests"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN"]}>
+                <CropRequestsAdmin />
+              </ProtectedRoute>
+            }
+          />
           {/* Fallback */}
           <Route path="*" element={<div style={{ padding: 20 }}>404 - Not Found</div>} />
         </Routes>

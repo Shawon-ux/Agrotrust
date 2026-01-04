@@ -18,9 +18,9 @@ import VerifiedUserOutlinedIcon from "@mui/icons-material/VerifiedUserOutlined";
 import InsightsOutlinedIcon from "@mui/icons-material/InsightsOutlined";
 import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
 import PaymentsOutlinedIcon from "@mui/icons-material/PaymentsOutlined";
-// Import a new icon for the education feature
-import SchoolOutlinedIcon from "@mui/icons-material/SchoolOutlined"; 
-
+import SchoolOutlinedIcon from "@mui/icons-material/SchoolOutlined";
+import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
+import AddCircleOutlineOutlinedIcon from "@mui/icons-material/AddCircleOutlineOutlined";
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -40,21 +40,23 @@ const Navbar = () => {
 
     const items = [];
 
-    // Common useful pages for logged in users
+    // Common items for all logged-in users
     items.push({ to: "/notifications", label: "Notifications", icon: <NotificationsNoneIcon fontSize="small" /> });
     items.push({ to: "/chatbot", label: "Chatbot", icon: <SmartToyOutlinedIcon fontSize="small" /> });
-    
-    // --- ADDED LEARNING PLATFORM LINK TO MENU ---
     items.push({ to: "/education", label: "Learning Platform", icon: <SchoolOutlinedIcon fontSize="small" /> });
-    // ------------------------------------------
 
-    // FARMER pages
-    if (user.role === "FARMER") {
-      items.push({ to: "/subsidies", label: "Subsidies", icon: <PaymentsOutlinedIcon fontSize="small" /> });
-      items.push({ to: "/subsidies/apply", label: "Apply Subsidy", icon: <PaymentsOutlinedIcon fontSize="small" /> });
+    // Orders for BUYER, FARMER, ADMIN
+    if (["BUYER", "FARMER", "ADMIN"].includes(user.role)) {
+      items.push({ to: "/orders", label: "My Orders", icon: <ShoppingCartOutlinedIcon fontSize="small" /> });
     }
 
-    // ADMIN pages
+    // FARMER-specific items — NOTE: "Apply Subsidy" removed as requested
+    if (user.role === "FARMER") {
+      items.push({ to: "/subsidies", label: "Subsidies", icon: <PaymentsOutlinedIcon fontSize="small" /> });
+      items.push({ to: "/crops/request", label: "Request Crop", icon: <AddCircleOutlineOutlinedIcon fontSize="small" /> });
+    }
+
+    // ADMIN-specific items
     if (user.role === "ADMIN") {
       items.push({ to: "/admin", label: "Admin Panel", icon: <AdminPanelSettingsOutlinedIcon fontSize="small" /> });
       items.push({ to: "/analytics", label: "Analytics", icon: <InsightsOutlinedIcon fontSize="small" /> });
@@ -62,7 +64,7 @@ const Navbar = () => {
       items.push({ to: "/ledger", label: "Blockchain Ledger", icon: <AccountBalanceWalletOutlinedIcon fontSize="small" /> });
     }
 
-    // GOV pages
+    // GOV_OFFICIAL-specific items
     if (user.role === "GOV_OFFICIAL") {
       items.push({ to: "/subsidies", label: "Subsidy Programs", icon: <PaymentsOutlinedIcon fontSize="small" /> });
       items.push({ to: "/verification", label: "Verification", icon: <VerifiedUserOutlinedIcon fontSize="small" /> });
@@ -92,7 +94,13 @@ const Navbar = () => {
                 <NavLink className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`} to="/crops">
                   Crops
                 </NavLink>
-                {/* Note: This link is already here in your original code */}
+
+                {["BUYER", "FARMER", "ADMIN"].includes(user.role) && (
+                  <NavLink className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`} to="/orders">
+                    Orders
+                  </NavLink>
+                )}
+
                 <NavLink className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`} to="/education">
                   Education
                 </NavLink>
@@ -110,8 +118,18 @@ const Navbar = () => {
         <div className="nav-right">
           {user ? (
             <>
-              {/* ✅ ICON ROW: show for ALL logged-in users */}
               <div className="icon-row">
+                {["BUYER", "FARMER", "ADMIN"].includes(user.role) && (
+                  <Link
+                    className={`icon-btn ${isActivePath("/orders") ? "active" : ""}`}
+                    to="/orders"
+                    title="My Orders"
+                    aria-label="My Orders"
+                  >
+                    <ShoppingCartOutlinedIcon fontSize="small" />
+                  </Link>
+                )}
+
                 <Link
                   className={`icon-btn ${isActivePath("/notifications") ? "active" : ""}`}
                   to="/notifications"
@@ -130,7 +148,6 @@ const Navbar = () => {
                   <SmartToyOutlinedIcon fontSize="small" />
                 </Link>
 
-                {/* ✅ 3 dots menu: show for ALL logged-in users */}
                 <IconButton
                   onClick={openMenu}
                   className={`icon-btn ${open ? "active" : ""}`}
@@ -174,9 +191,8 @@ const Navbar = () => {
                           {it.label}
                         </MenuItem>
 
-                        {/* small divider after common items */}
-                        {/* The index check 'idx === 2' now accounts for the 3 common links (Notif, Chatbot, Education) */}
-                        {idx === 2 && <Divider />} 
+                        {/* Divider after the 4th item (common section: Notifications, Chatbot, Education, Orders) */}
+                        {idx === 3 && <Divider />}
                       </React.Fragment>
                     ))
                   )}
@@ -186,6 +202,7 @@ const Navbar = () => {
               <span className="pill">
                 {user.name} ({user.role})
               </span>
+
               <button className="btn btn-danger" onClick={logout}>
                 Logout
               </button>
