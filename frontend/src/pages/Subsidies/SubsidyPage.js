@@ -242,7 +242,7 @@ export default function SubsidyPage() {
                                   <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
                                     <StatusBadge status={app.status} />
                                     <div style={{ fontSize: "0.75rem", color: "var(--muted)" }}>{new Date(app.createdAt).toLocaleDateString()}</div>
-                                    {app.status === "PENDING" && (
+                                    {app.status === "PENDING" && user?.role === "ADMIN" && (
                                       <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
                                         <button onClick={() => updateStatus(app._id, "APPROVED")} className="btn-icon" title="Approve" style={{ color: "green", background: "#dcfce7" }}>✓</button>
                                         <button onClick={() => updateStatus(app._id, "REJECTED")} className="btn-icon" title="Reject" style={{ color: "red", background: "#fee2e2" }}>✕</button>

@@ -69,6 +69,9 @@ exports.mySubsidyApplications = async (req, res) => {
 
 // Admin/Gov can review
 exports.updateApplicationStatus = async (req, res) => {
+  if (req.user.role !== "ADMIN") {
+    return res.status(403).json({ message: "Only admins can approve/reject applications" });
+  }
   const { status, adminReply } = req.body;
   const app = await SubsidyApplication.findById(req.params.id);
   if (!app) return res.status(404).json({ message: "Application not found" });

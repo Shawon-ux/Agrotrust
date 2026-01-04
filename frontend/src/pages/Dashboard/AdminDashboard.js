@@ -136,6 +136,13 @@ const AdminDashboard = () => {
                 <div className="action-sub">Basic platform insights</div>
               </div>
             </button>
+            <button className="action-tile" onClick={() => (window.location.href = "/subsidies")}>
+              <div className="action-emoji">💸</div>
+              <div>
+                <div className="action-title">Manage Subsidies</div>
+                <div className="action-sub">Approve & reject requests</div>
+              </div>
+            </button>
           </div>
         </div>
 
