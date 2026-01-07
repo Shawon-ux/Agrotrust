@@ -9,28 +9,24 @@ const {
   createOrder, 
   getMyOrders,
   getFarmerOrders,
-  getAllOrders,
   updateOrderStatus,
   updatePaymentStatus,
-  getOrderById
+  getAllOrders
 } = require("../controllers/orderController");
 
-// BUYER creates order (Cash on delivery)
-router.post("/", protect, authorizeRoles("BUYER"), createOrder);
+// Allow both BUYER and ADMIN to create orders
+router.post("/", protect, authorizeRoles("BUYER", "ADMIN"), createOrder);
 
-// BUYER gets their orders
-router.get("/my-orders", protect, authorizeRoles("BUYER"), getMyOrders);
+// BUYER and ADMIN can get their orders
+router.get("/my-orders", protect, authorizeRoles("BUYER", "ADMIN"), getMyOrders);
 
 // FARMER gets their orders
 router.get("/farmer-orders", protect, authorizeRoles("FARMER"), getFarmerOrders);
 
-// ADMIN & GOV get all orders
-router.get("/all", protect, authorizeRoles("ADMIN", "GOV_OFFICIAL"), getAllOrders);
+// Admin gets all orders
+router.get("/all", protect, authorizeRoles("ADMIN"), getAllOrders);
 
-// Get single order (for all authorized users)
-router.get("/:id", protect, getOrderById);
-
-// Update order status (Farmer, Buyer, Admin, Gov)
+// Update order status (Farmer or Admin)
 router.patch("/:id/status", protect, updateOrderStatus);
 
 // Update payment status (Admin only)
