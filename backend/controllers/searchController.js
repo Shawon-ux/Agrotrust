@@ -60,8 +60,12 @@ exports.searchAll = async (req, res) => {
         .limit(25);
     }
 
+
+    //you can search any crops from here
     res.json(out);
   } catch (err) {
-    res.status(500).json({ message: err.message || "Search failed" });
+    res.status(500).json({ message: err.message || "Sorry search failed try again" });
   }
 };
+
+
