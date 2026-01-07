@@ -50,7 +50,12 @@ const Navbar = () => {
       items.push({ to: "/orders", label: "My Orders", icon: <ShoppingCartOutlinedIcon fontSize="small" /> });
     }
 
-    // FARMER-specific items — NOTE: "Apply Subsidy" removed as requested
+    // Get Verified for all users (except ADMIN/GOV who have admin verification panel)
+    if (!["ADMIN", "GOV_OFFICIAL"].includes(user.role)) {
+      items.push({ to: "/verification/me", label: "Get Verified", icon: <VerifiedUserOutlinedIcon fontSize="small" /> });
+    }
+
+    // FARMER-specific items
     if (user.role === "FARMER") {
       items.push({ to: "/subsidies", label: "Subsidies", icon: <PaymentsOutlinedIcon fontSize="small" /> });
       items.push({ to: "/crops/request", label: "Request Crop", icon: <AddCircleOutlineOutlinedIcon fontSize="small" /> });
@@ -60,14 +65,15 @@ const Navbar = () => {
     if (user.role === "ADMIN") {
       items.push({ to: "/admin", label: "Admin Panel", icon: <AdminPanelSettingsOutlinedIcon fontSize="small" /> });
       items.push({ to: "/analytics", label: "Analytics", icon: <InsightsOutlinedIcon fontSize="small" /> });
-      items.push({ to: "/verification", label: "Verification", icon: <VerifiedUserOutlinedIcon fontSize="small" /> });
+      items.push({ to: "/verification", label: "Verification Panel", icon: <VerifiedUserOutlinedIcon fontSize="small" /> });
       items.push({ to: "/ledger", label: "Blockchain Ledger", icon: <AccountBalanceWalletOutlinedIcon fontSize="small" /> });
+      items.push({ to: "/crops/admin/add", label: "Add Crop", icon: <AddCircleOutlineOutlinedIcon fontSize="small" /> });
     }
 
     // GOV_OFFICIAL-specific items
     if (user.role === "GOV_OFFICIAL") {
       items.push({ to: "/subsidies", label: "Subsidy Programs", icon: <PaymentsOutlinedIcon fontSize="small" /> });
-      items.push({ to: "/verification", label: "Verification", icon: <VerifiedUserOutlinedIcon fontSize="small" /> });
+      items.push({ to: "/verification", label: "Verification Panel", icon: <VerifiedUserOutlinedIcon fontSize="small" /> });
       items.push({ to: "/ledger", label: "Blockchain Ledger", icon: <AccountBalanceWalletOutlinedIcon fontSize="small" /> });
       items.push({ to: "/analytics", label: "Analytics", icon: <InsightsOutlinedIcon fontSize="small" /> });
     }
@@ -81,7 +87,25 @@ const Navbar = () => {
         <div className="nav-left">
           <div className="brand">
             <div className="brand-badge" />
-            <Link to="/" style={{ fontWeight: 800 }}>AgroTrust</Link>
+            <Link to="/" style={{ fontWeight: 800, display: "flex", alignItems: "center", gap: 8 }}>
+              AgroTrust
+              {user?.verificationStatus === "VERIFIED" && (
+                <span 
+                  className="verified-badge" 
+                  title="Verified User"
+                  style={{
+                    fontSize: "12px",
+                    backgroundColor: "#dcfce7",
+                    color: "#166534",
+                    padding: "2px 6px",
+                    borderRadius: "12px",
+                    fontWeight: "600",
+                  }}
+                >
+                  ✓ Verified
+                </span>
+              )}
+            </Link>
           </div>
 
           {/* Main links (shown for ALL logged in users) */}
@@ -110,6 +134,13 @@ const Navbar = () => {
                 <NavLink className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`} to="/search">
                   Search
                 </NavLink>
+                
+                {/* Add Verification link in main nav for ADMIN/GOV */}
+                {["ADMIN", "GOV_OFFICIAL"].includes(user.role) && (
+                  <NavLink className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`} to="/verification">
+                    Verification
+                  </NavLink>
+                )}
               </>
             )}
           </div>
@@ -191,17 +222,36 @@ const Navbar = () => {
                           {it.label}
                         </MenuItem>
 
-                        {/* Divider after the 4th item (common section: Notifications, Chatbot, Education, Orders) */}
-                        {idx === 3 && <Divider />}
+                        {/* Smart dividers based on user role and item type */}
+                        {user.role === "FARMER" && idx === 4 && <Divider />}
+                        {user.role === "ADMIN" && idx === 6 && <Divider />}
+                        {user.role === "GOV_OFFICIAL" && idx === 6 && <Divider />}
+                        {!["ADMIN", "FARMER", "GOV_OFFICIAL"].includes(user.role) && idx === 3 && <Divider />}
                       </React.Fragment>
                     ))
                   )}
                 </Menu>
               </div>
 
-              <span className="pill">
-                {user.name} ({user.role})
-              </span>
+              <div className="user-info">
+                <span className="pill">
+                  {user.name} 
+                  <span className="user-role">({user.role})</span>
+                  {user.verificationStatus === "VERIFIED" && (
+                    <span 
+                      className="verified-indicator" 
+                      title="Verified User"
+                      style={{
+                        marginLeft: 6,
+                        color: "#22c55e",
+                        fontSize: "14px",
+                      }}
+                    >
+                      ✓
+                    </span>
+                  )}
+                </span>
+              </div>
 
               <button className="btn btn-danger" onClick={logout}>
                 Logout

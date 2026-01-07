@@ -32,9 +32,9 @@ app.get("/api/test", (req, res) => {
   res.json({ ok: true, message: "Backend is working" });
 });
 
-// ✅ routes
-app.use("/api/auth", require("./routes/authRoutes"));
-app.use("/api/ledger", require("./routes/ledgerRoutes")); // ✅ FIX (BLOCKCHAIN LEDGER)
+// ✅ routes (ALL UNIQUE - NO DUPLICATES)
+app.use("/api/auth", require("./routes/authRoutes"));          // login, register, /me
+app.use("/api/ledger", require("./routes/ledgerRoutes"));      // blockchain ledger
 app.use("/api/dashboard", require("./routes/dashboardRoutes"));
 app.use("/api/crops", require("./routes/cropRoutes"));
 app.use("/api/orders", require("./routes/orderRoutes"));
@@ -46,21 +46,34 @@ app.use("/api/feedback", require("./routes/feedbackRoutes"));
 app.use("/api/search", require("./routes/searchRoutes"));
 app.use("/api/chatbot", require("./routes/chatbotRoutes"));
 app.use("/api/analytics", require("./routes/analyticsRoutes"));
-app.use("/api/ledger", require("./routes/ledgerRoutes"));
 app.use("/api/verification", require("./routes/verificationRoutes"));
 app.use("/api/courses", require("./routes/courseRoutes"));
 app.use("/api/lessons", require("./routes/lessonRoutes"));
+// Add this BEFORE the 404 handler
+app.get("/api/test-courses", async (req, res) => {
+  const Course = require("./models/Course");
+  const courses = await Course.find({});
+  res.json(courses);
+});
+// ❌ REMOVED DUPLICATE:
+// app.use("/api/ledger", ...) // was listed twice!
 
-
+// 404 handler
 app.use((req, res) => {
-  res.status(404).json({ message: `Route not found: ${req.method} ${req.originalUrl}` });
+  res.status(404).json({ 
+    message: `Route not found: ${req.method} ${req.originalUrl}` 
+  });
 });
 
-
+// Global error handler
 app.use((err, req, res, next) => {
   console.error("SERVER ERROR:", err);
-  res.status(500).json({ message: err.message || "Server error" });
+  res.status(500).json({ 
+    message: err.message || "Server error" 
+  });
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => 
+  console.log(`✅ Server running on port ${PORT}`)
+);

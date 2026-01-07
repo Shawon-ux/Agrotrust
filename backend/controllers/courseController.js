@@ -2,7 +2,7 @@ const Course = require("../models/Course"); // Import the Mongoose model
 const User = require("../models/User");
 
 const Notification = require("../models/Notification");
-
+const mongoose = require("mongoose");
 // @desc    Get all courses (public or published only)
 // @route   GET /api/courses
 // @access  Public
@@ -30,17 +30,51 @@ exports.getAllCourses = async (req, res) => {
   
 // @desc    Get single course by ID
 // @route   GET /api/courses/:id
-// @access  Private (users must be logged in to view course details)
+// // @access  Private (users must be logged in to view course details)
+// exports.getCourseById = async (req, res) => {
+//   try {
+//     const course = await Course.findById(req.params.id)
+//       .populate("instructor", "name")
+//       .populate("lessons", "title order");
+
+//     if (!course) {
+//       return res.status(404).json({ success: false, message: "Course not found" });
+//     }
+//     res.status(200).json({ success: true, data: course });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+// // @desc    Get single course by ID
+// // @route   GET /api/courses/:id
+// // @access  Private
 exports.getCourseById = async (req, res) => {
   try {
-    const course = await Course.findById(req.params.id)
-      .populate("instructor", "name")
-      .populate("lessons", "title order");
+    const { id } = req.params;
+
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ success: false, message: "Invalid course ID" });
+    }
+
+    const course = await Course.findById(id).populate("instructor", "name");
 
     if (!course) {
       return res.status(404).json({ success: false, message: "Course not found" });
     }
-    res.status(200).json({ success: true, data: course });
+
+    // Check permissions for full access
+    const isEnrolled = req.user.enrolledCourses?.some(
+      enrolledId => enrolledId.toString() === course._id.toString()
+    );
+    const isOwner = course.instructor?._id?.toString() === req.user.id;
+    const isAdmin = req.user.role === "ADMIN";
+    const isGov = req.user.role === "GOV_OFFICIAL";
+
+    // Populate lessons (same fields for now — extend later if you have videoUrl/content)
+    await course.populate("lessons", "title order");
+
+    res.status(200).json({ success: true,  course });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -116,29 +150,40 @@ exports.createCourse = async (req, res) => {
       res.status(400).json({ success: false, message: error.message });
     }
   };
+// @desc    Update course details
+// @route   PATCH /api/courses/:id
+// @access  Private (Owner or Admin only)
 exports.updateCourse = async (req, res) => {
   try {
-    let course = await Course.findById(req.params.id);
+    const course = await Course.findById(req.params.id);
 
     if (!course) {
       return res.status(404).json({ success: false, message: "Course not found" });
     }
-    
-    // Check if the user is the owner OR is an authorized role
-    const allowedRoles = ["ADMIN", "FARMER", "GOV_OFFICIAL"];
-    const isAuthorizedRole = allowedRoles.includes(req.user.role);
-    const isOwner = course.instructor.toString() === req.user.id;
 
-    if (!isOwner && !isAuthorizedRole) {
-        return res.status(403).json({ success: false, message: 'User not authorized to update this course' });
+    // Only allow: course owner OR admin
+    const isOwner = course.instructor.toString() === req.user.id;
+    const isAdmin = req.user.role === "ADMIN";
+
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ 
+        success: false, 
+        message: "You can only update your own courses." 
+      });
     }
 
-    course = await Course.findByIdAndUpdate(req.params.id, req.body, {
-      new: true, // Return the updated object
-      runValidators: true, // Ensure Mongoose schema validation runs
-    });
+    // Handle thumbnail update
+    if (req.file) {
+      req.body.thumbnailUrl = req.file.path;
+    }
 
-    res.status(200).json({ success: true, data: course });
+    const updatedCourse = await Course.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
+
+    res.status(200).json({ success: true,  updatedCourse });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
   }
@@ -261,3 +306,29 @@ exports.adminApproveCourse = async (req, res) => {
         res.status(400).json({ success: false, message: error.message });
     }
 }
+// @desc    Get all courses the logged-in user is enrolled in
+// @route   GET /api/courses/enrolled
+// @access  Private
+exports.getEnrolledCourses = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).populate({
+      path: "enrolledCourses",
+      populate: {
+        path: "instructor",
+        select: "name"
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      count: user.enrolledCourses.length,
+      data: user.enrolledCourses
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

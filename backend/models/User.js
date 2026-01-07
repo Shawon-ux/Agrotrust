@@ -20,7 +20,27 @@ const userSchema = new mongoose.Schema(
       default: "FARMER",
     },
     languagePreference: { type: String, default: "en" },
-    isVerified: { type: Boolean, default: false },
+    
+    // ✅ ENHANCED VERIFICATION FIELDS
+    isVerified: { type: Boolean, default: false }, // Keep for backward compatibility
+    
+    // New comprehensive verification fields
+    verificationStatus: {
+      type: String,
+      enum: ["UNVERIFIED", "PENDING", "VERIFIED", "REJECTED"],
+      default: "UNVERIFIED",
+    },
+    verificationDate: {
+      type: Date,
+    },
+    verifiedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+    verificationNotes: {
+      type: String,
+    },
+    
     enrolledCourses: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],
   },
   { timestamps: true }
@@ -37,6 +57,32 @@ userSchema.pre("save", async function (next) {
 // compare password
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return bcrypt.compare(enteredPassword, this.password);
+};
+
+// ✅ Helper method to check if user is verified
+userSchema.methods.isUserVerified = function () {
+  return this.verificationStatus === "VERIFIED" || this.isVerified === true;
+};
+
+// ✅ Helper method to update verification status
+userSchema.methods.updateVerification = async function (status, verifiedBy = null, notes = null) {
+  this.verificationStatus = status;
+  
+  if (status === "VERIFIED") {
+    this.isVerified = true;
+    this.verificationDate = new Date();
+    this.verifiedBy = verifiedBy;
+  } else if (status === "REJECTED") {
+    this.isVerified = false;
+    this.verificationDate = null;
+    this.verifiedBy = null;
+  }
+  
+  if (notes) {
+    this.verificationNotes = notes;
+  }
+  
+  return this.save();
 };
 
 module.exports = mongoose.model("User", userSchema);

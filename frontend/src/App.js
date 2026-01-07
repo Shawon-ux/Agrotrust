@@ -34,7 +34,10 @@ import OrderDetailPage from "./pages/Orders/OrderDetailPage";
 import SearchPage from "./pages/Search/SearchPage";
 import RequestCrop from "./pages/Crops/RequestCrop";
 import CropRequestsAdmin from "./pages/Crops/CropRequestsAdmin";
-
+import MyCourses from "./pages/Education/MyCourses";
+import CourseDetail from "./pages/Education/CourseDetail";
+import VerificationAdmin from "./pages/Verification/VerificationAdmin";
+import UserVerification from "./pages/Verification/UserVerification";
 const Home = () => {
   const { user } = useAuth();
 
@@ -156,7 +159,24 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-
+          {/* My Enrolled Courses */}
+          <Route
+            path="/education/my-courses"
+            element={
+              <ProtectedRoute>
+                <MyCourses />
+              </ProtectedRoute>
+            } 
+          />
+          {/* Education - Course Detail Page */}
+          <Route
+              path="/education/courses/:id"
+              element={
+                <ProtectedRoute>
+                  <CourseDetail />
+                </ProtectedRoute>
+              }
+            />
           {/* Feedback - Buyer only */}
           <Route
             path="/feedback"
@@ -175,6 +195,7 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/search"
             element={
@@ -212,6 +233,32 @@ const App = () => {
             element={
               <ProtectedRoute allowedRoles={["ADMIN"]}>
                 <CropRequestsAdmin />
+              </ProtectedRoute>
+            }
+          />
+          // In App.js routes
+          <Route
+            path="/education/courses/:id"
+            element={
+              <ProtectedRoute>
+                <CourseDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/verification"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN", "GOV_OFFICIAL"]}>
+                <VerificationAdmin />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/verification/me"
+            element={
+              <ProtectedRoute>
+                <UserVerification />
               </ProtectedRoute>
             }
           />

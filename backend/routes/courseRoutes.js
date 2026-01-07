@@ -16,10 +16,12 @@ const {
   publishCourse,
   adminApproveCourse, 
   enrollInCourse,
+  getEnrolledCourses,
 } = require("../controllers/courseController");
 
 router.get("/",protect, getAllCourses);
 router.get("/:id", protect, getCourseById);
+router.get("/enrolled", protect, getEnrolledCourses);
 router.route("/:id/enroll").post(protect, enrollInCourse);
 router.post(
   "/",

@@ -6,7 +6,7 @@ const AuthContext = createContext(null);
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null); // { _id, name, email, role }
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -15,13 +15,7 @@ export const AuthProvider = ({ children }) => {
       const token = localStorage.getItem("agrotrust_token");
       if (savedUser && token) {
         const parsed = JSON.parse(savedUser);
-        setUser({
-          _id: parsed._id,
-          name: parsed.name,
-          email: parsed.email,
-          role: parsed.role,
-          isVerified: parsed.isVerified, // ✅ Add isVerified
-        });
+        setUser(parsed); // 👈 SAVE FULL USER OBJECT
       }
     } catch (e) {
       console.error("Error parsing saved user:", e);
@@ -32,16 +26,20 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  // 👇 SAVE FULL USER DATA (INCLUDING enrolledCourses)
   const handleAuthSuccess = (data) => {
+    // Keep all relevant user fields from backend
     const u = {
       _id: data._id,
       name: data.name,
       email: data.email,
       role: data.role,
-      isVerified: data.isVerified, // ✅ Add isVerified
+      isVerified: data.isVerified,
+      enrolledCourses: data.enrolledCourses || [], // ✅ CRITICAL!
+      // Add other fields you need: languagePreference, etc.
     };
     setUser(u);
-    localStorage.setItem("agrotrust_user", JSON.stringify(u)); // Save minimal user data + verified status
+    localStorage.setItem("agrotrust_user", JSON.stringify(u));
     localStorage.setItem("agrotrust_token", data.token);
   };
 
@@ -56,7 +54,16 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // ❌ Register no longer auto-logins. It returns message & email
+  // After enrollment, refresh user data
+  const refreshUser = async () => {
+    try {
+      const res = await api.get("/auth/me");
+      handleAuthSuccess(res.data.user); // 👈 UPDATE USER WITH FRESH DATA
+    } catch (err) {
+      console.error("Refresh user error:", err);
+    }
+  };
+
   const register = async (name, email, password, role, phone) => {
     try {
       const res = await api.post("/auth/register", {
@@ -66,7 +73,6 @@ export const AuthProvider = ({ children }) => {
         role,
         phone,
       });
-      // Do NOT call handleAuthSuccess. Just return data.
       return res.data;
     } catch (err) {
       console.error("Register error (frontend):", err);
@@ -81,7 +87,16 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider 
+      value={{ 
+        user, 
+        loading, 
+        login, 
+        register, 
+        logout,
+        refreshUser // 👈 EXPOSE THIS TO COMPONENTS
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
