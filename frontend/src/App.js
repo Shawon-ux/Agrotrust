@@ -11,6 +11,7 @@ import MessagesPage from "./pages/Messages/MessagesPage";
 import FarmPlanPage from "./pages/Farm/FarmPlanPage";
 import ReceiptPage from "./pages/Orders/ReceiptPage";
 import OfflineBanner from "./components/OfflineBanner";
+import AnalyticsPage from "./pages/Analytics/AnalyticsPage";
 import ProfilePage from "./pages/Profile/ProfilePage";
 import LandingPage from "./pages/Landing/LandingPage";
 import Login from "./pages/Login";
@@ -78,6 +79,7 @@ const App = () => {
           <Route path="/messages" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
           <Route path="/farm" element={<ProtectedRoute allowedRoles={["FARMER"]}><FarmPlanPage /></ProtectedRoute>} />
           <Route path="/orders/:id/receipt" element={<ProtectedRoute><ReceiptPage /></ProtectedRoute>} />
+          <Route path="/analytics" element={<ProtectedRoute allowedRoles={["ADMIN", "GOV_OFFICIAL"]}><AnalyticsPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
 
           {/* Auth */}

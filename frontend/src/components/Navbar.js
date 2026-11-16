@@ -74,16 +74,16 @@ const Navbar = () => {
       i.push({ to: "/crops/request", label: "Request Crop", icon: <AddCircleOutlineOutlinedIcon fontSize="small" /> });
     }
     if (user.role === "ADMIN") {
-      i.push({ to: "/admin", label: "Admin Panel", icon: <AdminPanelSettingsOutlinedIcon fontSize="small" /> });
+      i.push({ to: "/admin", label: "Admin", icon: <AdminPanelSettingsOutlinedIcon fontSize="small" /> });
       i.push({ to: "/crops/admin/add", label: "Add Crop", icon: <AddCircleOutlineOutlinedIcon fontSize="small" /> });
     }
     if (isStaff) {
-      i.push({ to: "/verification", label: "Verification Panel", icon: <VerifiedUserOutlinedIcon fontSize="small" /> });
-      i.push({ to: "/ledger", label: "Blockchain Ledger", icon: <AccountBalanceWalletOutlinedIcon fontSize="small" /> });
+      i.push({ to: "/verification", label: "Verification", icon: <VerifiedUserOutlinedIcon fontSize="small" /> });
+      i.push({ to: "/ledger", label: "Ledger", icon: <AccountBalanceWalletOutlinedIcon fontSize="small" /> });
       i.push({ to: "/analytics", label: "Analytics", icon: <InsightsOutlinedIcon fontSize="small" /> });
     }
     if (user.role === "GOV_OFFICIAL") {
-      i.push({ to: "/subsidies", label: "Subsidy Programs", icon: <PaymentsOutlinedIcon fontSize="small" /> });
+      i.push({ to: "/subsidies", label: "Subsidies", icon: <PaymentsOutlinedIcon fontSize="small" /> });
     }
     return i;
   }, [user, isStaff, t]);
@@ -117,6 +117,11 @@ const Navbar = () => {
               <NavLink className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`} to="/complaints">
                 <ReportGmailerrorredOutlinedIcon fontSize="small" /> <span>{t("complaints")}</span>
               </NavLink>
+              {menuItems.map((it) => (
+                <NavLink key={it.to + it.label} className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`} to={it.to}>
+                  {it.icon} <span>{it.label}</span>
+                </NavLink>
+              ))}
             </nav>
           )}
         </div>
@@ -175,12 +180,6 @@ const Navbar = () => {
                 <MenuItem onClick={closeMenu} component={NavLink} to="/profile" sx={{ gap: 1.2, fontWeight: 700 }}>
                   <PersonOutlineIcon fontSize="small" /> {t("profile")}
                 </MenuItem>
-                {menuItems.length > 0 && <Divider />}
-                {menuItems.map((it) => (
-                  <MenuItem key={it.to + it.label} onClick={closeMenu} component={NavLink} to={it.to} sx={{ gap: 1.2, fontWeight: 600 }}>
-                    {it.icon} {it.label}
-                  </MenuItem>
-                ))}
                 <Divider />
                 <MenuItem onClick={() => { closeMenu(); logout(); }} sx={{ gap: 1.2, fontWeight: 600, color: "#ef4444" }}>
                   <LogoutIcon fontSize="small" /> {t("logout")}
