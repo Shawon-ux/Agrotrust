@@ -34,13 +34,17 @@ export const AuthProvider = ({ children }) => {
       name: data.name,
       email: data.email,
       role: data.role,
+      phone: data.phone,
+      address: data.address,
+      createdAt: data.createdAt,
       isVerified: data.isVerified,
+      verificationStatus: data.verificationStatus,
+      phoneChangeRequest: data.phoneChangeRequest,
       enrolledCourses: data.enrolledCourses || [], // ✅ CRITICAL!
-      // Add other fields you need: languagePreference, etc.
     };
     setUser(u);
     localStorage.setItem("agrotrust_user", JSON.stringify(u));
-    localStorage.setItem("agrotrust_token", data.token);
+    if (data.token) localStorage.setItem("agrotrust_token", data.token);
   };
 
   const login = async (email, password) => {

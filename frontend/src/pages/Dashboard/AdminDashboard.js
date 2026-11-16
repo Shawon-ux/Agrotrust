@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import api from "../../api";
+import DashBanner from "../../components/DashBanner";
 
 const StatCard = ({ title, value, icon, hint }) => (
   <div className="stat-card">
@@ -51,28 +52,7 @@ const AdminDashboard = () => {
 
   return (
     <div className="container">
-      <div className="hero">
-        <div className="hero-row">
-          <div>
-            <h1 className="h1">Admin Dashboard</h1>
-            <p className="subhead">
-              Overview of users and platform activity.
-            </p>
-          </div>
-
-          <div className="hero-actions">
-            <button className="btn" onClick={fetchStats}>
-              Refresh
-            </button>
-            <button
-              className="btn btn-primary"
-              onClick={() => alert("Add admin actions here (Users, Complaints, Crops...)")}
-            >
-              Quick Actions
-            </button>
-          </div>
-        </div>
-      </div>
+      <DashBanner />
 
       {err && <div className="error">{err}</div>}
 

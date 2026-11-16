@@ -33,6 +33,10 @@ app.get("/api/test", (req, res) => {
 });
 
 // ✅ routes (ALL UNIQUE - NO DUPLICATES)
+app.use("/api/market-prices", require("./routes/marketPriceRoutes"));
+app.use("/api/messages", require("./routes/messageRoutes"));
+app.use("/api/farm-plans", require("./routes/farmPlanRoutes"));
+app.use("/api/users", require("./routes/userRoutes"));
 app.use("/api/auth", require("./routes/authRoutes"));          // login, register, /me
 app.use("/api/ledger", require("./routes/ledgerRoutes"));      // blockchain ledger
 app.use("/api/dashboard", require("./routes/dashboardRoutes"));

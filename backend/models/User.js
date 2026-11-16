@@ -19,6 +19,20 @@ const userSchema = new mongoose.Schema(
       enum: ["FARMER", "BUYER", "ADMIN", "GOV_OFFICIAL"],
       default: "FARMER",
     },
+    address: { type: String, default: "" },
+
+    // Phone can only be changed with admin approval
+    phoneChangeRequest: {
+      newPhone: { type: String },
+      status: {
+        type: String,
+        enum: ["NONE", "PENDING", "APPROVED", "REJECTED"],
+        default: "NONE",
+      },
+      requestedAt: { type: Date },
+      reviewedAt: { type: Date },
+    },
+
     languagePreference: { type: String, default: "en" },
     
     // ✅ ENHANCED VERIFICATION FIELDS

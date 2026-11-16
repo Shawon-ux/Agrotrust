@@ -29,7 +29,7 @@ const Register = () => {
 
   return (
     <div className="container">
-      <div className="card" style={{ maxWidth: 520, margin: "30px auto" }}>
+      <div className="card auth-card" style={{ maxWidth: 520, margin: "30px auto" }}>
         <h1 className="h1" style={{ fontSize: 28 }}>Create account</h1>
         <p className="subhead">Join AgroTrust and get started.</p>
 

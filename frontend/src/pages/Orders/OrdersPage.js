@@ -70,6 +70,19 @@ const OrdersPage = () => {
     });
   };
 
+  const exportCsv = () => {
+    const esc = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const head = ["Order ID", "Date", "Crop", "Quantity", "Unit", "Price/Unit", "Total", "Status", "Payment"];
+    const rows = orders.map((o) => [o._id, new Date(o.createdAt).toISOString().slice(0, 10), o.cropName, o.quantity, o.unit, o.pricePerUnit, o.totalPrice, o.status, o.paymentStatus]);
+    const csv = [head, ...rows].map((r) => r.map(esc).join(",")).join("\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "agrotrust-orders.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   if (loading) {
     return (
       <div className="container">
@@ -97,6 +110,7 @@ const OrdersPage = () => {
             </p>
           </div>
           <div className="hero-actions">
+            <button className="btn" onClick={exportCsv} disabled={orders.length === 0}>⬇️ Export CSV</button>
             <button className="btn" onClick={fetchOrders}>Refresh</button>
           </div>
         </div>

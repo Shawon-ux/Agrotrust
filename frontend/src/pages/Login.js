@@ -15,7 +15,7 @@ const Login = () => {
     try {
       setError("");
       await login(email, password);
-      navigate("/");
+      navigate("/dashboard");
     } catch (err) {
       const msg =
         err.response?.data?.message || err.message || "Login failed";
@@ -25,7 +25,7 @@ const Login = () => {
 
   return (
     <div className="container">
-      <div className="card" style={{ maxWidth: 460, margin: "30px auto" }}>
+      <div className="card auth-card" style={{ maxWidth: 460, margin: "30px auto" }}>
         <h1 className="h1" style={{ fontSize: 28 }}>Welcome back</h1>
         <p className="subhead">Login to continue to AgroTrust.</p>
 

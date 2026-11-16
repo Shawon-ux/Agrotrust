@@ -96,6 +96,9 @@ const OrderDetailPage = () => {
             <p className="subhead">Order #{order._id.slice(-8)}</p>
           </div>
           <div className="hero-actions">
+            <button className="btn btn-primary" onClick={() => navigate(`/orders/${id}/receipt`)}>
+              🧾 Receipt
+            </button>
             <button className="btn" onClick={() => navigate("/orders")}>
               Back to Orders
             </button>

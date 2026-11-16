@@ -6,6 +6,13 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
 
+import MarketPricesPage from "./pages/Market/MarketPricesPage";
+import MessagesPage from "./pages/Messages/MessagesPage";
+import FarmPlanPage from "./pages/Farm/FarmPlanPage";
+import ReceiptPage from "./pages/Orders/ReceiptPage";
+import OfflineBanner from "./components/OfflineBanner";
+import ProfilePage from "./pages/Profile/ProfilePage";
+import LandingPage from "./pages/Landing/LandingPage";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import VerifyEmail from "./pages/VerifyEmail";
@@ -38,17 +45,9 @@ import MyCourses from "./pages/Education/MyCourses";
 import CourseDetail from "./pages/Education/CourseDetail";
 import VerificationAdmin from "./pages/Verification/VerificationAdmin";
 import UserVerification from "./pages/Verification/UserVerification";
-const Home = () => {
-  const { user } = useAuth();
-
-  if (!user) {
-    return (
-      <div style={{ padding: "20px" }}>
-        <h2>Welcome to AgroTrust</h2>
-        <p>Please login or register to continue.</p>
-      </div>
-    );
-  }
+const Dashboard = () => {
+  const { user, loading } = useAuth();
+  if (loading) return <div style={{ padding: 20 }}>Loading...</div>;
 
   // if (!user.isVerified) check removed to allow Dashboard access without verification
 
@@ -64,17 +63,22 @@ const App = () => {
     <AuthProvider>
       <Router>
         <Navbar />
+        <OfflineBanner />
 
         <Routes>
           {/* Home */}
           <Route
             path="/"
-            element={
-              <ProtectedRoute>
-                <Home />
-              </ProtectedRoute>
-            }
+            element={<LandingPage />}
           />
+
+          {/* Dashboard (after login) */}
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/market" element={<ProtectedRoute><MarketPricesPage /></ProtectedRoute>} />
+          <Route path="/messages" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
+          <Route path="/farm" element={<ProtectedRoute allowedRoles={["FARMER"]}><FarmPlanPage /></ProtectedRoute>} />
+          <Route path="/orders/:id/receipt" element={<ProtectedRoute><ReceiptPage /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
 
           {/* Auth */}
           <Route path="/login" element={<Login />} />
@@ -236,7 +240,7 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-          // In App.js routes
+          {/* In App.js routes */}
           <Route
             path="/education/courses/:id"
             element={

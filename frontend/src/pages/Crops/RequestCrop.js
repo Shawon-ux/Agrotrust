@@ -96,7 +96,7 @@ const RequestCrop = () => {
   };
 
   return (
-    <div className="container" style={{ maxWidth: 720 }}>
+    <div className="container narrow">
       <div className="hero">
         <h1 className="h1">Request New Crop</h1>
         <p className="subhead">Submit your crop details for admin approval</p>

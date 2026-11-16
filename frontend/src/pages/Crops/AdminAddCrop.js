@@ -42,7 +42,7 @@ const AdminAddCrop = () => {
   };
 
   return (
-    <div className="container" style={{ maxWidth: 720 }}>
+    <div className="container narrow">
       <div className="card">
         <h2 style={{ marginTop: 0 }}>Add New Crop (Admin)</h2>
 

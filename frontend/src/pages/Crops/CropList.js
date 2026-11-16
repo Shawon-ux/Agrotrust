@@ -256,7 +256,11 @@ const CropList = () => {
                       {user?.role === "FARMER" ? "💰 Sell" : user?.role === "ADMIN" ? "💰 Sell" : "🛒 Order"}
                     </button>
 
-                    <button className="btn">Details</button>
+                    {user?.role === "BUYER" && c.farmer && (
+                      <button className="btn" onClick={() => nav(`/messages?to=${c.farmer._id || c.farmer}`)}>
+                        💬 Message farmer
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

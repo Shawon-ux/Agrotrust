@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../../api";
+import DashBanner from "../../components/DashBanner";
 
 const GovDashboard = () => {
   const [data, setData] = useState(null);
@@ -23,20 +24,7 @@ const GovDashboard = () => {
   return (
     <div className="container">
       {/* Hero Section */}
-      <div className="hero">
-        <div className="hero-row">
-          <div>
-            <h1 className="h1">Government Overview</h1>
-            <p className="subhead">
-              Monitor agricultural subsidies and compliance data.
-            </p>
-          </div>
-          <div className="hero-actions">
-            <Link className="btn btn-primary" to="/subsidies">Manage Subsidies</Link>
-            <Link className="btn" to="/ledger">Agro Ledger</Link>
-          </div>
-        </div>
-      </div>
+      <DashBanner />
 
       {err && <div className="error">{err}</div>}
 

@@ -1,271 +1,201 @@
 // src/components/Navbar.js
-import React, { useMemo, useState } from "react";
-import { Link, NavLink, useLocation } from "react-router-dom";
+import React, { useEffect, useMemo, useState } from "react";
+import { Link, NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
+import { useLang } from "../context/LanguageContext";
+import api from "../api";
 
-// MUI
-import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import Divider from "@mui/material/Divider";
 
-// MUI Icons
-import MoreVertIcon from "@mui/icons-material/MoreVert";
+import SpaceDashboardOutlinedIcon from "@mui/icons-material/SpaceDashboardOutlined";
+import GrassOutlinedIcon from "@mui/icons-material/GrassOutlined";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import SchoolOutlinedIcon from "@mui/icons-material/SchoolOutlined";
+import ReportGmailerrorredOutlinedIcon from "@mui/icons-material/ReportGmailerrorredOutlined";
+import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
+import AgricultureOutlinedIcon from "@mui/icons-material/AgricultureOutlined";
+import SearchIcon from "@mui/icons-material/Search";
+import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import SmartToyOutlinedIcon from "@mui/icons-material/SmartToyOutlined";
-import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalanceWalletOutlined";
 import VerifiedUserOutlinedIcon from "@mui/icons-material/VerifiedUserOutlined";
 import InsightsOutlinedIcon from "@mui/icons-material/InsightsOutlined";
 import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
 import PaymentsOutlinedIcon from "@mui/icons-material/PaymentsOutlined";
-import SchoolOutlinedIcon from "@mui/icons-material/SchoolOutlined";
-import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
+import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalanceWalletOutlined";
 import AddCircleOutlineOutlinedIcon from "@mui/icons-material/AddCircleOutlineOutlined";
+import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
+import LogoutIcon from "@mui/icons-material/Logout";
+import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
+import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
+
+const IconLink = ({ to, title, children }) => (
+  <NavLink
+    to={to}
+    title={title}
+    aria-label={title}
+    className={({ isActive }) => `icon-btn ${isActive ? "active" : ""}`}
+  >
+    {children}
+  </NavLink>
+);
 
 const Navbar = () => {
   const { user, logout } = useAuth();
-  const location = useLocation();
+  const { theme, toggleTheme } = useTheme();
+  const { t, toggleLang } = useLang();
+  const [unread, setUnread] = useState(0);
 
+  useEffect(() => {
+    if (!user) return undefined;
+    const load = () => api.get("/messages/unread-count").then((r) => setUnread(r.data.count)).catch(() => {});
+    load();
+    const i = setInterval(load, 20000);
+    return () => clearInterval(i);
+  }, [user]);
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
-
-  const openMenu = (e) => setAnchorEl(e.currentTarget);
   const closeMenu = () => setAnchorEl(null);
 
-  const isActivePath = (path) => location.pathname === path;
+  const canOrder = user && ["BUYER", "FARMER", "ADMIN"].includes(user.role);
+  const isStaff = user && ["ADMIN", "GOV_OFFICIAL"].includes(user.role);
 
-  // ✅ Menu items by role (3-dots)
-  const moreItems = useMemo(() => {
+  // Extra links inside the profile menu (role based)
+  const menuItems = useMemo(() => {
     if (!user) return [];
-
-    const items = [];
-
-    // Common items for all logged-in users
-    items.push({ to: "/notifications", label: "Notifications", icon: <NotificationsNoneIcon fontSize="small" /> });
-    items.push({ to: "/chatbot", label: "Chatbot", icon: <SmartToyOutlinedIcon fontSize="small" /> });
-    items.push({ to: "/education", label: "Learning Platform", icon: <SchoolOutlinedIcon fontSize="small" /> });
-
-    // Orders for BUYER, FARMER, ADMIN
-    if (["BUYER", "FARMER", "ADMIN"].includes(user.role)) {
-      items.push({ to: "/orders", label: "My Orders", icon: <ShoppingCartOutlinedIcon fontSize="small" /> });
-    }
-
-    // Get Verified for all users (except ADMIN/GOV who have admin verification panel)
-    if (!["ADMIN", "GOV_OFFICIAL"].includes(user.role)) {
-      items.push({ to: "/verification/me", label: "Get Verified", icon: <VerifiedUserOutlinedIcon fontSize="small" /> });
-    }
-
-    // FARMER-specific items
+    const i = [];
+    if (!isStaff) i.push({ to: "/verification/me", label: t("getVerified"), icon: <VerifiedUserOutlinedIcon fontSize="small" /> });
     if (user.role === "FARMER") {
-      items.push({ to: "/subsidies", label: "Subsidies", icon: <PaymentsOutlinedIcon fontSize="small" /> });
-      items.push({ to: "/crops/request", label: "Request Crop", icon: <AddCircleOutlineOutlinedIcon fontSize="small" /> });
+      i.push({ to: "/farm", label: t("farmPlan"), icon: <AgricultureOutlinedIcon fontSize="small" /> });
+      i.push({ to: "/subsidies", label: "Subsidies", icon: <PaymentsOutlinedIcon fontSize="small" /> });
+      i.push({ to: "/crops/request", label: "Request Crop", icon: <AddCircleOutlineOutlinedIcon fontSize="small" /> });
     }
-
-    // ADMIN-specific items
     if (user.role === "ADMIN") {
-      items.push({ to: "/admin", label: "Admin Panel", icon: <AdminPanelSettingsOutlinedIcon fontSize="small" /> });
-      items.push({ to: "/analytics", label: "Analytics", icon: <InsightsOutlinedIcon fontSize="small" /> });
-      items.push({ to: "/verification", label: "Verification Panel", icon: <VerifiedUserOutlinedIcon fontSize="small" /> });
-      items.push({ to: "/ledger", label: "Blockchain Ledger", icon: <AccountBalanceWalletOutlinedIcon fontSize="small" /> });
-      items.push({ to: "/crops/admin/add", label: "Add Crop", icon: <AddCircleOutlineOutlinedIcon fontSize="small" /> });
+      i.push({ to: "/admin", label: "Admin Panel", icon: <AdminPanelSettingsOutlinedIcon fontSize="small" /> });
+      i.push({ to: "/crops/admin/add", label: "Add Crop", icon: <AddCircleOutlineOutlinedIcon fontSize="small" /> });
     }
-
-    // GOV_OFFICIAL-specific items
+    if (isStaff) {
+      i.push({ to: "/verification", label: "Verification Panel", icon: <VerifiedUserOutlinedIcon fontSize="small" /> });
+      i.push({ to: "/ledger", label: "Blockchain Ledger", icon: <AccountBalanceWalletOutlinedIcon fontSize="small" /> });
+      i.push({ to: "/analytics", label: "Analytics", icon: <InsightsOutlinedIcon fontSize="small" /> });
+    }
     if (user.role === "GOV_OFFICIAL") {
-      items.push({ to: "/subsidies", label: "Subsidy Programs", icon: <PaymentsOutlinedIcon fontSize="small" /> });
-      items.push({ to: "/verification", label: "Verification Panel", icon: <VerifiedUserOutlinedIcon fontSize="small" /> });
-      items.push({ to: "/ledger", label: "Blockchain Ledger", icon: <AccountBalanceWalletOutlinedIcon fontSize="small" /> });
-      items.push({ to: "/analytics", label: "Analytics", icon: <InsightsOutlinedIcon fontSize="small" /> });
+      i.push({ to: "/subsidies", label: "Subsidy Programs", icon: <PaymentsOutlinedIcon fontSize="small" /> });
     }
+    return i;
+  }, [user, isStaff, t]);
 
-    return items;
-  }, [user]);
+  const initial = (user?.name || "?").trim().charAt(0).toUpperCase();
 
   return (
-    <div className="navbar">
+    <header className="navbar">
       <div className="navbar-inner">
         <div className="nav-left">
-          <div className="brand">
-            <div className="brand-badge" />
-            <Link to="/" style={{ fontWeight: 800, display: "flex", alignItems: "center", gap: 8 }}>
-              AgroTrust
-              {user?.verificationStatus === "VERIFIED" && (
-                <span 
-                  className="verified-badge" 
-                  title="Verified User"
-                  style={{
-                    fontSize: "12px",
-                    backgroundColor: "#dcfce7",
-                    color: "#166534",
-                    padding: "2px 6px",
-                    borderRadius: "12px",
-                    fontWeight: "600",
-                  }}
-                >
-                  ✓ Verified
-                </span>
-              )}
-            </Link>
-          </div>
+          {/* Brand: click to go to the home overview page */}
+          <Link to="/" className="brand-link" title="AgroTrust Home">
+            <span className="brand-badge" />
+            <span className="brand-name">AgroTrust</span>
+          </Link>
 
-          {/* Main links (shown for ALL logged in users) */}
-          <div className="nav-links">
-            {user && (
-              <>
-                <NavLink className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`} to="/">
-                  Home
-                </NavLink>
-                <NavLink className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`} to="/crops">
-                  Crops
-                </NavLink>
-
-                {["BUYER", "FARMER", "ADMIN"].includes(user.role) && (
-                  <NavLink className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`} to="/orders">
-                    Orders
-                  </NavLink>
-                )}
-
-                <NavLink className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`} to="/education">
-                  Education
-                </NavLink>
-                <NavLink className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`} to="/complaints">
-                  Complaints
-                </NavLink>
-                <NavLink className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`} to="/search">
-                  Search
-                </NavLink>
-                
-                {/* Add Verification link in main nav for ADMIN/GOV */}
-                {["ADMIN", "GOV_OFFICIAL"].includes(user.role) && (
-                  <NavLink className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`} to="/verification">
-                    Verification
-                  </NavLink>
-                )}
-              </>
-            )}
-          </div>
+          {user && (
+            <nav className="nav-links">
+              <NavLink className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`} to="/dashboard">
+                <SpaceDashboardOutlinedIcon fontSize="small" /> <span>{t("dashboard")}</span>
+              </NavLink>
+              <NavLink className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`} to="/crops">
+                <GrassOutlinedIcon fontSize="small" /> <span>{t("crops")}</span>
+              </NavLink>
+              <NavLink className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`} to="/market">
+                <TrendingUpIcon fontSize="small" /> <span>{t("prices")}</span>
+              </NavLink>
+              <NavLink className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`} to="/education">
+                <SchoolOutlinedIcon fontSize="small" /> <span>{t("education")}</span>
+              </NavLink>
+              <NavLink className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`} to="/complaints">
+                <ReportGmailerrorredOutlinedIcon fontSize="small" /> <span>{t("complaints")}</span>
+              </NavLink>
+            </nav>
+          )}
         </div>
 
         <div className="nav-right">
+          <button
+            className="icon-btn"
+            onClick={toggleTheme}
+            title={theme === "dark" ? t("lightMode") : t("darkMode")}
+            aria-label="Toggle dark mode"
+          >
+            {theme === "dark" ? <LightModeOutlinedIcon fontSize="small" /> : <DarkModeOutlinedIcon fontSize="small" />}
+          </button>
+
+          <button className="lang-btn" onClick={toggleLang} aria-label="Change language">{t("language")}</button>
+
           {user ? (
             <>
-              <div className="icon-row">
-                {["BUYER", "FARMER", "ADMIN"].includes(user.role) && (
-                  <Link
-                    className={`icon-btn ${isActivePath("/orders") ? "active" : ""}`}
-                    to="/orders"
-                    title="My Orders"
-                    aria-label="My Orders"
-                  >
-                    <ShoppingCartOutlinedIcon fontSize="small" />
-                  </Link>
-                )}
+              <IconLink to="/search" title={t("search")}><SearchIcon fontSize="small" /></IconLink>
+              {canOrder && <IconLink to="/orders" title={t("orders")}><ShoppingCartOutlinedIcon fontSize="small" /></IconLink>}
+              <IconLink to="/messages" title={t("messages")}>
+                <ChatBubbleOutlineIcon fontSize="small" />
+                {unread > 0 && <span className="icon-badge">{unread}</span>}
+              </IconLink>
+              <IconLink to="/notifications" title={t("notifications")}><NotificationsNoneIcon fontSize="small" /></IconLink>
+              <IconLink to="/chatbot" title={t("assistant")}><SmartToyOutlinedIcon fontSize="small" /></IconLink>
 
-                <Link
-                  className={`icon-btn ${isActivePath("/notifications") ? "active" : ""}`}
-                  to="/notifications"
-                  title="Notifications"
-                  aria-label="Notifications"
-                >
-                  <NotificationsNoneIcon fontSize="small" />
-                </Link>
-
-                <Link
-                  className={`icon-btn ${isActivePath("/chatbot") ? "active" : ""}`}
-                  to="/chatbot"
-                  title="Chatbot"
-                  aria-label="Chatbot"
-                >
-                  <SmartToyOutlinedIcon fontSize="small" />
-                </Link>
-
-                <IconButton
-                  onClick={openMenu}
-                  className={`icon-btn ${open ? "active" : ""}`}
-                  aria-label="More"
-                  size="small"
-                >
-                  <MoreVertIcon fontSize="small" />
-                </IconButton>
-
-                <Menu
-                  anchorEl={anchorEl}
-                  open={open}
-                  onClose={closeMenu}
-                  transformOrigin={{ horizontal: "right", vertical: "top" }}
-                  anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-                  PaperProps={{
-                    sx: {
-                      borderRadius: "14px",
-                      border: "1px solid rgba(15, 23, 42, 0.10)",
-                      boxShadow: "0 18px 45px rgba(2, 6, 23, 0.08)",
-                      minWidth: 220,
-                      overflow: "hidden",
-                    },
-                  }}
-                >
-                  {moreItems.length === 0 ? (
-                    <MenuItem disabled>No actions</MenuItem>
-                  ) : (
-                    moreItems.map((it, idx) => (
-                      <React.Fragment key={it.to}>
-                        <MenuItem
-                          onClick={closeMenu}
-                          component={NavLink}
-                          to={it.to}
-                          style={{
-                            gap: 10,
-                            fontWeight: 650,
-                          }}
-                        >
-                          {it.icon}
-                          {it.label}
-                        </MenuItem>
-
-                        {/* Smart dividers based on user role and item type */}
-                        {user.role === "FARMER" && idx === 4 && <Divider />}
-                        {user.role === "ADMIN" && idx === 6 && <Divider />}
-                        {user.role === "GOV_OFFICIAL" && idx === 6 && <Divider />}
-                        {!["ADMIN", "FARMER", "GOV_OFFICIAL"].includes(user.role) && idx === 3 && <Divider />}
-                      </React.Fragment>
-                    ))
-                  )}
-                </Menu>
-              </div>
-
-              <div className="user-info">
-                <span className="pill">
-                  {user.name} 
-                  <span className="user-role">({user.role})</span>
-                  {user.verificationStatus === "VERIFIED" && (
-                    <span 
-                      className="verified-indicator" 
-                      title="Verified User"
-                      style={{
-                        marginLeft: 6,
-                        color: "#22c55e",
-                        fontSize: "14px",
-                      }}
-                    >
-                      ✓
-                    </span>
-                  )}
-                </span>
-              </div>
-
-              <button className="btn btn-danger" onClick={logout}>
-                Logout
+              <button
+                className="avatar-btn"
+                onClick={(e) => setAnchorEl(e.currentTarget)}
+                title="My Profile"
+                aria-label="Open profile menu"
+              >
+                {initial}
+                {user.verificationStatus === "VERIFIED" && <span className="avatar-check">✓</span>}
               </button>
+
+              <Menu
+                anchorEl={anchorEl}
+                open={open}
+                onClose={closeMenu}
+                transformOrigin={{ horizontal: "right", vertical: "top" }}
+                anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+                PaperProps={{
+                  sx: {
+                    mt: 1,
+                    borderRadius: "16px",
+                    border: "1px solid var(--border)",
+                    background: "var(--card)",
+                    color: "var(--text)",
+                    boxShadow: "var(--shadow)",
+                    minWidth: 230,
+                  },
+                }}
+              >
+                <MenuItem onClick={closeMenu} component={NavLink} to="/profile" sx={{ gap: 1.2, fontWeight: 700 }}>
+                  <PersonOutlineIcon fontSize="small" /> {t("profile")}
+                </MenuItem>
+                {menuItems.length > 0 && <Divider />}
+                {menuItems.map((it) => (
+                  <MenuItem key={it.to + it.label} onClick={closeMenu} component={NavLink} to={it.to} sx={{ gap: 1.2, fontWeight: 600 }}>
+                    {it.icon} {it.label}
+                  </MenuItem>
+                ))}
+                <Divider />
+                <MenuItem onClick={() => { closeMenu(); logout(); }} sx={{ gap: 1.2, fontWeight: 600, color: "#ef4444" }}>
+                  <LogoutIcon fontSize="small" /> {t("logout")}
+                </MenuItem>
+              </Menu>
             </>
           ) : (
             <>
-              <Link className="btn" to="/login">Login</Link>
-              <Link className="btn btn-primary" to="/register">Register</Link>
+              <Link className="btn" to="/login">{t("login")}</Link>
+              <Link className="btn btn-primary" to="/register">{t("signup")}</Link>
             </>
           )}
         </div>
       </div>
-    </div>
+    </header>
   );
 };
 

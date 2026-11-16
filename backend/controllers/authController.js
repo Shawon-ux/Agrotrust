@@ -181,6 +181,11 @@ exports.loginUser = async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      phone: user.phone,
+      address: user.address,
+      isVerified: user.isVerified,
+      verificationStatus: user.verificationStatus,
+      createdAt: user.createdAt,
       token: generateToken(user._id, user.role),
     });
   } catch (err) {
